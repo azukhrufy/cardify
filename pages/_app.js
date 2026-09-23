@@ -1,5 +1,6 @@
 import { ChakraProvider, Box } from "@chakra-ui/react";
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 
 import theme from "@/theme";
 import "@/styles/globals.css";
@@ -27,6 +28,7 @@ export default function App({ Component, pageProps }) {
         color="fg"
       >
         <Component {...pageProps} />
+        <Analytics />
       </Box>
     </ChakraProvider>
   );
