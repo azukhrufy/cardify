@@ -33,22 +33,23 @@ const STEPS = [
   },
 ];
 
+/**
+ * The page's light band: black type on white, sandwiched between the dark hero
+ * and the dark footer. Uses the `*Inverse` tokens so contrast is deliberate.
+ */
 export default function WhoWeAre() {
   return (
-    <Box
-      as="section"
-      id="how-it-works"
-      scrollMarginTop="4rem"
-      borderTopWidth="1px"
-      borderColor="border"
-    >
+    <Box as="section" id="how-it-works" scrollMarginTop="4rem" bg="bgInverse">
+      {/* 1px gradient hairline stitches the dark hero into the light band. */}
+      <Box h="1px" bgGradient="brand" />
+
       <Box maxW="7xl" mx="auto" px={6} py={{ base: 24, md: 32 }}>
         <Box maxW="2xl">
           <Text
             fontSize="xs"
             textTransform="uppercase"
             letterSpacing="0.2em"
-            color="muted"
+            color="mutedInverse"
             mb={4}
           >
             Who We Are
@@ -58,11 +59,11 @@ export default function WhoWeAre() {
             fontSize={{ base: "3xl", md: "5xl" }}
             fontWeight="bold"
             letterSpacing="tight"
-            color="fg"
+            color="fgInverse"
           >
             Built for creators who are done guessing.
           </Heading>
-          <Text fontSize="lg" lineHeight="tall" color="muted" mt={4}>
+          <Text fontSize="lg" lineHeight="tall" color="mutedInverse" mt={4}>
             Cardify is a free tool for influencers who want a number they can
             defend. Upload your performance data, and we turn it into a rate card
             you can send to brands — no agency markup, no benchmark guesswork.
@@ -79,22 +80,22 @@ export default function WhoWeAre() {
               key={card.title}
               borderRadius="card"
               borderWidth="1px"
-              borderColor="border"
-              bg="surface"
+              borderColor="borderInverse"
+              bg="surfaceInverse"
               p={6}
               transition="border-color 150ms ease"
-              _hover={{ borderColor: "borderStrong" }}
+              _hover={{ borderColor: "borderInverseStrong" }}
             >
               <Heading
                 as="h3"
                 fontSize="lg"
                 fontWeight="semibold"
                 letterSpacing="tight"
-                color="fg"
+                color="fgInverse"
               >
                 {card.title}
               </Heading>
-              <Text color="muted" lineHeight="tall" mt={2}>
+              <Text color="mutedInverse" lineHeight="tall" mt={2}>
                 {card.body}
               </Text>
             </Box>
@@ -108,7 +109,7 @@ export default function WhoWeAre() {
           gap={6}
           mt={20}
           borderTopWidth="1px"
-          borderColor="border"
+          borderColor="borderInverse"
           pt={12}
         >
           {STEPS.map((step) => (
@@ -126,12 +127,12 @@ export default function WhoWeAre() {
                 as="h3"
                 fontSize="base"
                 fontWeight="semibold"
-                color="fg"
+                color="fgInverse"
                 mt={3}
               >
                 {step.title}
               </Heading>
-              <Text color="muted" mt={1} lineHeight="tall">
+              <Text color="mutedInverse" mt={1} lineHeight="tall">
                 {step.body}
               </Text>
             </Stack>

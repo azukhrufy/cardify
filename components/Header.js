@@ -28,7 +28,10 @@ export default function Header() {
       zIndex={50}
       borderBottomWidth="1px"
       borderColor="border"
-      bg="rgba(10,10,10,0.8)"
+      /* 0.92, not 0.8: over the white "Who We Are" band an 0.8 panel composites
+         to #3B3B3B, dropping the muted nav link to 4.4:1 — under AA. 0.92 gives
+         #1E1E1E and 6.5:1. */
+      bg="rgba(10,10,10,0.92)"
       backdropFilter="blur(12px)"
     >
       <Flex

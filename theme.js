@@ -11,6 +11,7 @@ const theme = extendTheme({
     useSystemColorMode: false,
   },
   colors: {
+    // Dark bands (default)
     bg: "#0A0A0A",
     surface: "rgba(255,255,255,0.02)",
     border: "rgba(255,255,255,0.10)",
@@ -18,6 +19,14 @@ const theme = extendTheme({
     fg: "#FFFFFF",
     muted: "#A1A1AA",
     faint: "#71717A",
+    // Light band ("inverse" of the tokens above) — used by inverted sections
+    bgInverse: "#FFFFFF",
+    surfaceInverse: "rgba(10,10,10,0.02)",
+    borderInverse: "rgba(10,10,10,0.10)",
+    borderInverseStrong: "rgba(10,10,10,0.16)",
+    fgInverse: "#0A0A0A",
+    mutedInverse: "#52525B",
+    faintInverse: "#71717A",
     // Namespaced on purpose: Chakra's own component styles read `blue.500` etc.,
     // so overriding `blue` / `purple` / `pink` would break default focus rings.
     accent: {

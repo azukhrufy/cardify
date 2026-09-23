@@ -60,7 +60,7 @@ Visual example: [`../reference/design-reference.png`](../reference/design-refere
 
 ### What NOT to borrow
 
-- **Section structure.** The image alternates black and white bands and stacks five distinct sections. This site is pure black throughout — separation comes from spacing and surface value, not light bands.
+- **Section count and light-band density.** The image alternates bands across five stacked sections. This site uses exactly one light band — Hero and Footer are dark, "Who We Are" is white. Adding more light bands fragments the page; within a single band, separation comes from spacing and surface value, not extra dividers.
 - **Gradient area.** The image fills whole panels with saturated gradient. This site holds a 10% accent budget — gradient tiles become small accent elements, never full-width fields.
 - **Density.** The image is a mobile-width capture; this site is desktop-first at `maxW="7xl"`.
 
@@ -70,11 +70,14 @@ Visual example: [`../reference/design-reference.png`](../reference/design-refere
 
 - **Core Style:** Modern Dark Studio / Creative Agency Portfolio.
 - **Vibe:** High-end, exclusive, bold, clean, and professional — like a contemporary creative agency.
+- **Band structure:** Dark hero → white proof band ("Who We Are") → dark footer. The two dark ends frame one light section, so the page reads as one composition rather than a stack of unrelated blocks. The dark-to-light seam carries a 1px `bgGradient="brand"` hairline.
 - **Layout Structure:** Grid-based, modular layout. Asymmetric but balanced. Cards with minimal rounding — nothing above `borderRadius="card"` (12px).
 
 ## Theme Tokens
 
 `theme.js` is the single source of truth. Section specs below reference these names; never hardcode a hex value in a component.
+
+**Two token sets, one role each.** `bg` / `fg` / `muted` / `border` are the dark-band set. The `*Inverse` names are the same roles for the light band. A component never mixes the two inside one band — a dark band uses the base set, the light band uses `*Inverse`. That is what keeps contrast deliberate instead of accidental.
 
 ```js
 import { extendTheme } from "@chakra-ui/react";
@@ -85,6 +88,7 @@ const theme = extendTheme({
     useSystemColorMode: false,
   },
   colors: {
+    // Dark bands (default)
     bg: "#0A0A0A",          // page background
     surface: "rgba(255,255,255,0.02)", // card fill
     border: "rgba(255,255,255,0.10)",  // default hairline
@@ -92,6 +96,14 @@ const theme = extendTheme({
     fg: "#FFFFFF",          // headings, primary text
     muted: "#A1A1AA",       // secondary text, labels
     faint: "#71717A",       // footer / micro-copy
+    // Light band — same roles, inverted. Only "Who We Are" uses these.
+    bgInverse: "#FFFFFF",
+    surfaceInverse: "rgba(10,10,10,0.02)",
+    borderInverse: "rgba(10,10,10,0.10)",
+    borderInverseStrong: "rgba(10,10,10,0.16)",
+    fgInverse: "#0A0A0A",
+    mutedInverse: "#52525B", // 7.6:1 on white
+    faintInverse: "#71717A", // 4.8:1 on white
     accent: {
       purple: "#8B5CF6",
       pink: "#EC4899",
@@ -235,6 +247,7 @@ For a hard-edged gradient surface (hero preview panel accent), use `bgGradient="
 ### Usage Rules (Best Practices)
 
 - **Do Not Overdo It:** Keep a 90% ratio of clean, sharp black-and-white, and use gradient elements only as a sweetening accent (10% max) so the high-end, professional aesthetic holds up without looking tacky.
+- **Sanctioned gradient surfaces (all of them):** the hero's ambient glow, the hero preview panel's 1px ring, the 1px hairline at the dark→light band seam, and the three step numbers `01`–`03`. Anything else — a gradient button fill, a gradient section background, gradient body text — is out of budget.
 - **Use Blur Effects:** Always apply a high blur (`filter="blur(64px)"` or `blur(96px)`) to background gradients so they blend smoothly into the deep black base (`#0A0A0A`).
 
 ## Routes & File Structure
@@ -279,6 +292,8 @@ sections/          # only if components/ grows past ~8 files
 
 Phase 1 ships the Header Menu, Footer, Hero Section, and the "Who We Are" section. Copy below is final English content; layout notes reference the tokens defined above.
 
+**Band order:** Header (dark) → Hero (dark) → Who We Are (light) → Footer (dark). `bg="bgInverse"` on the light band is the only background swap on the page.
+
 ### Hero Section
 
 #### Content
@@ -318,7 +333,7 @@ Phase 1 ships the Header Menu, Footer, Hero Section, and the "Who We Are" sectio
 
 #### Layout & Styling
 
-- Sticky: `position="sticky" top={0} zIndex={50} borderBottomWidth="1px" borderColor="border" bg="rgba(10,10,10,0.8)" backdropFilter="blur(12px)"`.
+- Sticky: `position="sticky" top={0} zIndex={50} borderBottomWidth="1px" borderColor="border" bg="rgba(10,10,10,0.92)" backdropFilter="blur(12px)"`. The 0.92 opacity (not 0.8) is load-bearing: the header sticks over the white band while scrolling, and an 0.8 panel composites to `#3B3B3B` there, putting the `muted` nav link at 4.4:1 — under the 4.5:1 AA floor for small text. At 0.92 the composite is `#1E1E1E` and the link measures 6.5:1.
 - Inner container: `maxW="7xl" mx="auto" px={6} h={16} display="flex" alignItems="center" justifyContent="space-between"`.
 - Nav links: `fontSize="sm" color="muted" _hover={{ color: "fg" }} transition="color 150ms"`, spacing `gap={8}`.
 - Header CTA is smaller than the hero primary: `size="sm"`.
@@ -363,11 +378,14 @@ Phase 1 ships the Header Menu, Footer, Hero Section, and the "Who We Are" sectio
 
 #### Layout & Styling
 
+- **This is the light band** — `bg="bgInverse"` on the section, and every text, border, and surface token inside it is the `*Inverse` set. Nothing in this section uses a dark-band token.
 - Section anchored `id="how-it-works"`. The 3-step strip is a sub-block of this section, anchored `id="how-it-works-steps"`.
-- Heading block: left-aligned, `maxW="2xl"`. Lead paragraph sits under the heading with `mt={4}`.
-- Value cards: `display="grid" templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={6} mt={16}`. Each card `borderRadius="card" borderWidth="1px" borderColor="border" bg="surface" p={6}`, `_hover={{ borderColor: "borderStrong" }}`. Card title `as="h3" fontSize="lg" fontWeight="semibold" letterSpacing="tight"`, body `color="muted" lineHeight="tall" mt={2}`.
-- Step strip: `display="grid" templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={6} mt={20} borderTopWidth="1px" borderColor="border" pt={12}`. Step number `fontSize="sm" fontFamily="body" bgGradient="linear(to-r, accent.purple, accent.pink)" bgClip="text" color="transparent"` (`01` / `02` / `03`) — this is the section's only gradient, keeping the 10% accent budget. Step title `fontSize="base" fontWeight="semibold" mt={3}`, step body `color="muted" mt={1}`.
+- Top seam: `<Box h="1px" bgGradient="brand" />` as the first child of the section — the only thing separating the dark hero from the white band.
+- Heading block: left-aligned, `maxW="2xl"`. Overline `color="mutedInverse"`. H2 `color="fgInverse"`. Lead paragraph `color="mutedInverse"` with `mt={4}`.
+- Value cards: `<Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={6} mt={16}>`. Each card `borderRadius="card" borderWidth="1px" borderColor="borderInverse" bg="surfaceInverse" p={6}`, `_hover={{ borderColor: "borderInverseStrong" }}`. Card title `as="h3" fontSize="lg" fontWeight="semibold" letterSpacing="tight" color="fgInverse"`, body `color="mutedInverse" lineHeight="tall" mt={2}`.
+- Step strip: `<Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={6} mt={20} borderTopWidth="1px" borderColor="borderInverse" pt={12}>`. Step number `fontSize="sm" fontFamily="body" bgGradient="linear(to-r, accent.purple, accent.pink)" bgClip="text" color="transparent"` (`01` / `02` / `03`) — the gradient reads correctly on white, so the accent survives the band flip. Step title `fontSize="base" fontWeight="semibold" mt={3} color="fgInverse"`, step body `color="mutedInverse" mt={1}`.
 - Section padding: `py={{ base: 24, md: 32 }}`. Container: `maxW="7xl" mx="auto" px={6}`.
+- The dark footer keeps its own separation: `mt={32}` on `<footer>` leaves 128px of page background between the white band and the footer's top hairline.
 
 ## SEO & Metadata Specification
 
