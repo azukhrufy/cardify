@@ -12,9 +12,9 @@ import {
 const PLATFORMS = ["TikTok", "YouTube", "Instagram"];
 
 const SAMPLE_METRICS = [
-  { label: "Engagement rate", value: "4.8%" },
-  { label: "Avg. views", value: "128K" },
-  { label: "Audience match", value: "92%" },
+  { label: "Tingkat engagement", value: "4,8%" },
+  { label: "Rata-rata tayangan", value: "128 rb" },
+  { label: "Kesesuaian audiens", value: "92%" },
 ];
 
 function PreviewPanel() {
@@ -48,7 +48,7 @@ function PreviewPanel() {
             letterSpacing="0.2em"
             color="muted"
           >
-            Estimated rate
+            Estimasi tarif
           </Text>
           <Heading
             as="p"
@@ -58,10 +58,10 @@ function PreviewPanel() {
             color="fg"
             mt={2}
           >
-            $1,240
+            Rp18.500.000
           </Heading>
           <Text fontSize="sm" color="faint">
-            per sponsored post
+            per postingan sponsor
           </Text>
 
           <Box borderTopWidth="1px" borderColor="border" mt={6} pt={6}>
@@ -118,7 +118,7 @@ export default function Hero() {
             color="muted"
             mb={4}
           >
-            Free Rate Card Calculator
+            Kalkulator Rate Card Gratis
           </Text>
 
           <Heading
@@ -129,7 +129,7 @@ export default function Hero() {
             lineHeight="1.05"
             color="fg"
           >
-            Know what your influence is worth.
+            Ketahui berapa nilai pengaruhmu.
           </Heading>
 
           <Text
@@ -139,21 +139,21 @@ export default function Hero() {
             maxW="xl"
             mt={6}
           >
-            Upload your social media dashboard and get a data-backed rate card for
-            TikTok, YouTube, and Instagram — in minutes, not weeks.
+            Unggah dasbor media sosialmu dan dapatkan rate card berbasis data untuk
+            TikTok, YouTube, dan Instagram — dalam hitungan menit, bukan minggu.
           </Text>
 
           <HStack spacing={4} mt={8} flexWrap="wrap">
             <Button as="a" href="#how-it-works" variant="primary">
-              Calculate My Rate
+              Hitung Rate Card Saya
             </Button>
             <Button as="a" href="#how-it-works" variant="secondary">
-              See How It Works
+              Lihat Cara Kerjanya
             </Button>
           </HStack>
 
           <Text fontSize="sm" color="faint" mt={4}>
-            Free to use. No signup. No credit card.
+            Gratis. Tanpa daftar. Tanpa kartu kredit.
           </Text>
         </Stack>
 

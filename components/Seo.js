@@ -3,10 +3,10 @@ import Head from "next/head";
 export const SITE_NAME = "Cardify";
 export const SITE_URL = "https://cardify.my.id";
 export const SITE_DESCRIPTION =
-  "Cardify turns your social media dashboard into a rate card brands take seriously. Free, no signup. Calculate your TikTok, YouTube, and Instagram rates in minutes.";
+  "Cardify mengubah dasbor media sosialmu menjadi rate card yang serius dipertimbangkan brand. Gratis, tanpa daftar. Hitung tarif TikTok, YouTube, dan Instagram-mu dalam hitungan menit.";
 
 const DEFAULT_TITLE =
-  "Cardify — Free Influencer Rate Card Calculator for TikTok, YouTube & Instagram";
+  "Cardify — Kalkulator Rate Card Influencer Gratis untuk TikTok, YouTube & Instagram";
 
 const JSON_LD = {
   "@context": "https://schema.org",
@@ -16,8 +16,8 @@ const JSON_LD = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   description:
-    "Free rate card calculator for influencers. Upload your social media dashboard and get a data-backed rate for TikTok, YouTube, and Instagram.",
-  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    "Kalkulator rate card gratis untuk influencer. Unggah dasbor media sosialmu dan dapatkan tarif berbasis data untuk TikTok, YouTube, dan Instagram.",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "IDR" },
 };
 
 /**

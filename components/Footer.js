@@ -20,11 +20,11 @@ export default function Footer() {
           <Box maxW="sm">
             <Wordmark />
             <Text fontSize="sm" color="muted" mt={3}>
-              Know what your influence is worth.
+              Ketahui berapa nilai pengaruhmu.
             </Text>
             <Text fontSize="sm" color="faint" mt={2} lineHeight="tall">
-              Cardify turns your social media dashboard into a rate card brands
-              take seriously.
+              Cardify mengubah dasbor media sosialmu menjadi rate card yang serius
+              dipertimbangkan brand.
             </Text>
           </Box>
 
@@ -36,7 +36,7 @@ export default function Footer() {
               transition="color 150ms"
               _hover={{ color: "fg" }}
             >
-              How It Works
+              Cara Kerja
             </Link>
           </VStack>
         </Grid>

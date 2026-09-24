@@ -42,7 +42,7 @@ export default function Header() {
         align="center"
         justify="space-between"
       >
-        <Link href="/" _hover={{ textDecoration: "none" }} aria-label="Cardify home">
+        <Link href="/" _hover={{ textDecoration: "none" }} aria-label="Beranda Cardify">
           <Wordmark pill />
         </Link>
 
@@ -54,17 +54,17 @@ export default function Header() {
             transition="color 150ms"
             _hover={{ color: "fg" }}
           >
-            How It Works
+            Cara Kerja
           </Link>
           <Button as="a" href="#how-it-works" variant="primary" size="sm">
-            Calculate My Rate
+            Hitung Rate Card Saya
           </Button>
         </HStack>
 
         <IconButton
           display={{ base: "flex", md: "none" }}
           onClick={onToggle}
-          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-label={isOpen ? "Tutup menu" : "Buka menu"}
           aria-expanded={isOpen}
           icon={isOpen ? <FiX /> : <FiMenu />}
           variant="ghost"
@@ -89,7 +89,7 @@ export default function Header() {
               onClick={onToggle}
               _hover={{ color: "fg" }}
             >
-              How It Works
+              Cara Kerja
             </Link>
             <Button
               as="a"
@@ -99,7 +99,7 @@ export default function Header() {
               w="full"
               onClick={onToggle}
             >
-              Calculate My Rate
+              Hitung Rate Card Saya
             </Button>
           </Stack>
         </Box>
