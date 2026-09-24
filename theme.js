@@ -34,6 +34,14 @@ const theme = extendTheme({
       pink: "#EC4899",
       blue: "#3B82F6",
     },
+    // Per-platform band colours (Phase 2). Each calculator route takes its
+    // platform's own background; `cyan` / `red` are the two hues that make the
+    // TikTok mark's chromatic-offset edges.
+    tiktok: {
+      black: "#000000",
+      cyan: "#25F4EE",
+      red: "#FE2C55",
+    },
   },
   fonts: {
     heading: "var(--font-heading), system-ui, sans-serif",
