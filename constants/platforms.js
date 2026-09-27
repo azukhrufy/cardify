@@ -1,0 +1,30 @@
+export const PLATFORMS = [
+  {
+    id: 'instagram',
+    label: 'Instagram',
+    icon: 'instagram',
+    hasStories: true,
+    hasReels: true,
+    hasFeedPosts: true,
+    defaultContentTypes: ['story', 'feedPost', 'reels'],
+  },
+  {
+    id: 'tiktok',
+    label: 'TikTok',
+    icon: 'tiktok',
+    hasStories: false,
+    hasReels: false,
+    hasFeedPosts: false,
+    defaultContentTypes: ['shortVideo'],
+  },
+  {
+    id: 'youtube',
+    label: 'YouTube',
+    icon: 'youtube',
+    hasStories: false,
+    hasReels: false,
+    hasFeedPosts: false,
+    defaultContentTypes: ['integration', 'dedicatedVideo'],
+    hasShorts: true,
+  },
+];

@@ -1,0 +1,86 @@
+export const NICHES = [
+  {
+    id: 'beauty',
+    label: 'Beauty & Skincare',
+    description: 'Konten kecantikan, skincare, makeup, grooming',
+    platformCPMs: {
+      instagram: { feedPost: 20000, story: 12000, reels: 25000 },
+      tiktok: { video: 11000 },
+      youtube: { integration: 30000, dedicatedVideo: 45000 },
+    },
+    engagementMultiplier: 1.15,
+    contentTypeMultipliers: { story: 0.6, feedPost: 1.0, reels: 1.2, shortVideo: 1.1, longVideo: 1.5 },
+  },
+  {
+    id: 'fashion',
+    label: 'Fashion & Lifestyle',
+    description: 'Konten fashion, style, daily lifestyle, outfit',
+    platformCPMs: {
+      instagram: { feedPost: 18000, story: 10000, reels: 22000 },
+      tiktok: { video: 10000 },
+      youtube: { integration: 28000, dedicatedVideo: 40000 },
+    },
+    engagementMultiplier: 1.05,
+    contentTypeMultipliers: { story: 0.6, feedPost: 1.0, reels: 1.2, shortVideo: 1.0, longVideo: 1.4 },
+  },
+  {
+    id: 'food',
+    label: 'Food & Culinary',
+    description: 'Konten kuliner, restoran, recipe, food review',
+    platformCPMs: {
+      instagram: { feedPost: 15000, story: 9000, reels: 20000 },
+      tiktok: { video: 9000 },
+      youtube: { integration: 25000, dedicatedVideo: 35000 },
+    },
+    engagementMultiplier: 1.0,
+    contentTypeMultipliers: { story: 0.6, feedPost: 1.0, reels: 1.15, shortVideo: 1.0, longVideo: 1.4 },
+  },
+  {
+    id: 'gaming',
+    label: 'Gaming & Esports',
+    description: 'Konten game, esports, gaming vlog, review game',
+    platformCPMs: {
+      instagram: { feedPost: 12000, story: 7000, reels: 15000 },
+      tiktok: { video: 8000 },
+      youtube: { integration: 22000, dedicatedVideo: 32000 },
+    },
+    engagementMultiplier: 0.95,
+    contentTypeMultipliers: { story: 0.5, feedPost: 0.9, reels: 1.1, shortVideo: 0.9, longVideo: 1.3 },
+  },
+  {
+    id: 'tech',
+    label: 'Tech & Gadget',
+    description: 'Konten teknologi, gadget review, software, tech news',
+    platformCPMs: {
+      instagram: { feedPost: 22000, story: 13000, reels: 28000 },
+      tiktok: { video: 13000 },
+      youtube: { integration: 35000, dedicatedVideo: 50000 },
+    },
+    engagementMultiplier: 1.2,
+    contentTypeMultipliers: { story: 0.6, feedPost: 1.0, reels: 1.2, shortVideo: 1.1, longVideo: 1.6 },
+  },
+  {
+    id: 'finance',
+    label: 'Finance & Business',
+    description: 'Konten keuangan, investasi, bisnis, fintech, edukasi keuangan',
+    platformCPMs: {
+      instagram: { feedPost: 30000, story: 18000, reels: 35000 },
+      tiktok: { video: 16000 },
+      youtube: { integration: 45000, dedicatedVideo: 65000 },
+    },
+    engagementMultiplier: 1.35,
+    contentTypeMultipliers: { story: 0.65, feedPost: 1.0, reels: 1.25, shortVideo: 1.15, longVideo: 1.8 },
+  },
+  {
+    id: 'general',
+    label: 'General / Lainnya',
+    description: 'Konten umum, vlog, entertainment, atau niche lain yang tidak tercover',
+    platformCPMs: {
+      instagram: { feedPost: 15000, story: 9000, reels: 18000 },
+      tiktok: { video: 9000 },
+      youtube: { integration: 25000, dedicatedVideo: 35000 },
+    },
+    engagementMultiplier: 1.0,
+    contentTypeMultipliers: { story: 0.6, feedPost: 1.0, reels: 1.15, shortVideo: 1.0, longVideo: 1.4 },
+  },
+];
