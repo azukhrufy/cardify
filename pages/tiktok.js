@@ -1,7 +1,7 @@
 import { Box } from "@chakra-ui/react";
 
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
+import Header from "@/Layouts/HomePageLayout/Header";
+import Footer from "@/Layouts/HomePageLayout/Footer";
 import Seo from "@/components/Seo";
 import TiktokHero from "@/components/TiktokHero";
 import TiktokHowItWorks from "@/components/TiktokHowItWorks";
