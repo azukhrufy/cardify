@@ -1,40 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Cardify
 
-## Getting Started
+**Cardify** – Free Rate Card Calculator for Influencers on TikTok, YouTube, and Instagram.
 
-First, run the development server:
+## ✨ What is Cardify?
+Cardify lets creators instantly generate a data‑driven rate card based on their social‑media analytics. No sign‑up, no credit‑card, just upload your dashboard screenshot or export and get a PDF you can send to brands.
 
+## 🚀 Features
+- **Three platforms** – TikTok, YouTube, Instagram (each with its own pricing model).
+- **Instant calculations** – results in seconds, not days.
+- **Free & open‑source** – the code lives on GitHub, feel free to contribute.
+- **Export PDF** – ready‑to‑share rate card.
+
+## 📦 Getting Started (local development)
 ```bash
-npm run dev
-# or
+# Clone the repo (already done)
+cd cardify
+
+# Install dependencies (using yarn)
+yarn install
+
+# Run the development server
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
+Open http://localhost:3000 to see the app.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Deploying
+Deploy to Vercel (recommended) or any Node.js host.
+```bash
+# Build the app
+yarn build
+# Start the production server
+yarn start
+```
+Follow the Vercel docs for one‑click deployment.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## 📄 Documentation
+- **Website**: https://cardify.my.id – live demo.
+- **API**: see `pages/api/*` for backend endpoints.
+- **Contributing**: open a PR, follow the contribution guideline in `CONTRIBUTING.md`.
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+## 🤝 Contributing
+1. Fork the repo.
+2. Create a feature branch (`git checkout -b guntur-<feature>`).
+3. Commit with the prefix `guntur (feat|fix|chore): <message>`.
+4. Push and open a Pull Request.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+## 📜 License
+MIT – see `LICENSE` for details.
