@@ -39,6 +39,31 @@ export const CONTENT_TYPES = {
       ],
       multiplierRef: 'shortVideo',
     },
+    {
+      id: 'photoMode',
+      label: 'TikTok Carousel / Photo Mode',
+      description: 'Konten foto/karousel, breakdown berdasarkan jumlah gambar',
+      durationOptions: null,
+      multiplierRef: 'photoMode',
+    },
+    {
+      id: 'integration',
+      label: 'TikTok Integration / Brand Mention',
+      description: 'Mention/integrasi merek dalam video yang ada (opsional add-on)',
+      durationOptions: null,
+      multiplierRef: 'integration',
+    },
+    {
+      id: 'dedicatedVideo',
+      label: 'TikTok Dedicated Video / Sponsored',
+      description: 'Video utuh berisi merek/konten sponsori',
+      durationOptions: [
+        { label: '15 – 30 detik', durationRange: '15-30s', multiplierExtra: 1.0 },
+        { label: '30 – 60 detik', durationRange: '30-60s', multiplierExtra: 1.2 },
+        { label: '> 60 detik', durationRange: '>60s', multiplierExtra: 1.4 },
+      ],
+      multiplierRef: 'dedicatedVideo',
+    },
   ],
   youtube: [
     {
