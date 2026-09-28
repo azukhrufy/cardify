@@ -11,6 +11,7 @@ import {
 import { FiMenu, FiX } from "react-icons/fi";
 
 import Wordmark from "../../components/Wordmark";
+import { useRouter } from "next/router";
 
 /**
  * Sticky site nav. Phase 1 carries a single `How It Works` link and points the
@@ -19,6 +20,7 @@ import Wordmark from "../../components/Wordmark";
  */
 export default function Header() {
   const { isOpen, onToggle } = useDisclosure();
+  const router = useRouter();
 
   return (
     <Box
@@ -51,11 +53,13 @@ export default function Header() {
         </Link>
 
         <HStack spacing={8} display={{ base: "none", md: "flex" }}>
-          <Link>Beranda</Link>
+          <Link href="/" color={router?.pathname === "/" ? "fg" : "muted"}>
+            Beranda
+          </Link>
           <Link
             href="how-it-works"
             fontSize="sm"
-            color="muted"
+            color={router?.pathname === "/how-it-works" ? "fg" : "muted"}
             transition="color 150ms"
             _hover={{ color: "fg" }}
           >

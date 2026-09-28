@@ -42,6 +42,47 @@ const theme = extendTheme({
       cyan: "#25F4EE",
       red: "#FE2C55",
     },
+    // Chakra colorScheme scales (50-900) for per-platform CTAs, anchored on
+    // each brand's signature colour so `colorScheme="tiktokBlack"` etc. work
+    // on Button/Badge/etc. out of the box.
+    tiktokBlack: {
+      // 50-400 are white-tinted mixes of the 500 base, so the whole scale
+      // derives from the single brand value instead of a generic gray ramp.
+      50: "#E8E8E8",
+      100: "#D1D1D1",
+      200: "#AFAFAF",
+      300: "#8D8D8D",
+      400: "#636363",
+      500: "#1A1A1A",
+      600: "#141414",
+      700: "#0F0F0F",
+      800: "#080808",
+      900: "#000000",
+    },
+    youtubeRed: {
+      50: "#FFE5E5",
+      100: "#FFB8B8",
+      200: "#FF8A8A",
+      300: "#FF5C5C",
+      400: "#FF2E2E",
+      500: "#FF0000",
+      600: "#CC0000",
+      700: "#990000",
+      800: "#660000",
+      900: "#330000",
+    },
+    purpleInstagram: {
+      50: "#F3E8FA",
+      100: "#E1C2F0",
+      200: "#CE9BE6",
+      300: "#BB75DC",
+      400: "#A94ED1",
+      500: "#833AB4",
+      600: "#6A2E90",
+      700: "#50236C",
+      800: "#371748",
+      900: "#1D0C24",
+    },
   },
   fonts: {
     heading: "var(--font-heading), system-ui, sans-serif",

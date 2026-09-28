@@ -1,7 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import Seo from "@/components/Seo";
-import Hero from "@/src/sections/LandingPage/Hero";
-import WhoWeAre from "@/src/sections/LandingPage/WhoWeAre";
+import Hero from "@/sections/LandingPage/Hero";
+import WhoWeAre from "@/sections/LandingPage/WhoWeAre";
 import HomeLayout from "@/Layouts/HomePageLayout";
 
 Home.getLayout = function getLayout(page) {
