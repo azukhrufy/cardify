@@ -4,6 +4,10 @@ import Hero from "@/src/sections/LandingPage/Hero";
 import WhoWeAre from "@/src/sections/LandingPage/WhoWeAre";
 import HomeLayout from "@/Layouts/HomePageLayout";
 
+Home.getLayout = function getLayout(page) {
+  return <HomeLayout>{page}</HomeLayout>;
+};
+
 export default function Home() {
   return (
     <>
@@ -16,6 +20,4 @@ export default function Home() {
   );
 }
 
-Home.getLayout = function getLayout(page) {
-  return <HomeLayout>{page}</HomeLayout>;
-};
+
