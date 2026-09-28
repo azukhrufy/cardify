@@ -1,6 +1,5 @@
 import { Box, Flex, Grid, Link, Text, VStack } from "@chakra-ui/react";
-
-import Wordmark from "./Wordmark";
+import Wordmark from "../../components/Wordmark";
 
 export default function Footer() {
   return (
@@ -13,18 +12,15 @@ export default function Footer() {
       scrollMarginTop="4rem"
     >
       <Box maxW="7xl" mx="auto" px={6}>
-        <Grid
-          templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-          gap={12}
-        >
+        <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={12}>
           <Box maxW="sm">
             <Wordmark />
             <Text fontSize="sm" color="muted" mt={3}>
               Ketahui berapa nilai pengaruhmu.
             </Text>
             <Text fontSize="sm" color="faint" mt={2} lineHeight="tall">
-              Cardify mengubah dasbor media sosialmu menjadi rate card yang serius
-              dipertimbangkan brand.
+              Cardify mengubah dasbor media sosialmu menjadi rate card yang
+              serius dipertimbangkan brand.
             </Text>
           </Box>
 

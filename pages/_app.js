@@ -18,6 +18,7 @@ const inter = Inter({
 });
 
 export default function App({ Component, pageProps }) {
+  const getLayout = Component.getLayout ?? ((page) => page);
   return (
     <ChakraProvider theme={theme}>
       <Box
@@ -27,7 +28,7 @@ export default function App({ Component, pageProps }) {
         bg="bg"
         color="fg"
       >
-        <Component {...pageProps} />
+        {getLayout(<Component {...pageProps} />)}
         <Analytics />
       </Box>
     </ChakraProvider>
