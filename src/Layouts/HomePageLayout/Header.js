@@ -10,7 +10,8 @@ import {
 } from "@chakra-ui/react";
 import { FiMenu, FiX } from "react-icons/fi";
 
-import Wordmark from "./Wordmark";
+import Wordmark from "../../components/Wordmark";
+import { useRouter } from "next/router";
 
 /**
  * Sticky site nav. Phase 1 carries a single `How It Works` link and points the
@@ -19,6 +20,7 @@ import Wordmark from "./Wordmark";
  */
 export default function Header() {
   const { isOpen, onToggle } = useDisclosure();
+  const router = useRouter();
 
   return (
     <Box
@@ -42,21 +44,28 @@ export default function Header() {
         align="center"
         justify="space-between"
       >
-        <Link href="/" _hover={{ textDecoration: "none" }} aria-label="Beranda Cardify">
+        <Link
+          href="/"
+          _hover={{ textDecoration: "none" }}
+          aria-label="Beranda Cardify"
+        >
           <Wordmark pill />
         </Link>
 
         <HStack spacing={8} display={{ base: "none", md: "flex" }}>
+          <Link href="/" color={router?.pathname === "/" ? "fg" : "muted"}>
+            Beranda
+          </Link>
           <Link
-            href="#how-it-works"
+            href="how-it-works"
             fontSize="sm"
-            color="muted"
+            color={router?.pathname === "/how-it-works" ? "fg" : "muted"}
             transition="color 150ms"
             _hover={{ color: "fg" }}
           >
             Cara Kerja
           </Link>
-          <Button as="a" href="#how-it-works" variant="primary" size="sm">
+          <Button as="a" href="/calculator" variant="primary" size="sm">
             Hitung Rate Card Saya
           </Button>
         </HStack>

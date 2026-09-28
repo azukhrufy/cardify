@@ -19,7 +19,7 @@ const SAMPLE_METRICS = [
 
 function PreviewPanel() {
   return (
-    <Box position="relative">
+    <Box position="relative" pb={2}>
       {/* The section's only gradient surface: a 1px brand ring around the panel. */}
       <Box borderRadius="card" p="1px" bgGradient="brand">
         <Box bg="bg" borderRadius="card" p={6}>
@@ -139,15 +139,16 @@ export default function Hero() {
             maxW="xl"
             mt={6}
           >
-            Unggah dasbor media sosialmu dan dapatkan rate card berbasis data untuk
-            TikTok, YouTube, dan Instagram — dalam hitungan menit, bukan minggu.
+            Unggah dasbor media sosialmu dan dapatkan rate card berbasis data
+            untuk TikTok, YouTube, dan Instagram — dalam hitungan menit, bukan
+            minggu.
           </Text>
 
           <HStack spacing={4} mt={8} flexWrap="wrap">
-            <Button as="a" href="#how-it-works" variant="primary">
+            <Button as="a" href="/calculator" variant="primary">
               Hitung Rate Card Saya
             </Button>
-            <Button as="a" href="#how-it-works" variant="secondary">
+            <Button as="a" href="/how-it-works" variant="secondary">
               Lihat Cara Kerjanya
             </Button>
           </HStack>
