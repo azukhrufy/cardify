@@ -145,10 +145,10 @@ export default function Hero() {
           </Text>
 
           <HStack spacing={4} mt={8} flexWrap="wrap">
-            <Button as="a" href="#how-it-works" variant="primary">
+            <Button as="a" href="/calculator" variant="primary">
               Hitung Rate Card Saya
             </Button>
-            <Button as="a" href="#how-it-works" variant="secondary">
+            <Button as="a" href="/how-it-works" variant="secondary">
               Lihat Cara Kerjanya
             </Button>
           </HStack>

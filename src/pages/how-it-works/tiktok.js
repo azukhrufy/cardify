@@ -3,8 +3,8 @@ import { Box } from "@chakra-ui/react";
 import Header from "@/Layouts/HomePageLayout/Header";
 import Footer from "@/Layouts/HomePageLayout/Footer";
 import Seo from "@/components/Seo";
-import TiktokHero from "@/components/TiktokHero";
-import TiktokHowItWorks from "@/components/TiktokHowItWorks";
+import TiktokHero from "@/sections/Calc/Tiktok/TiktokHero";
+import TiktokHowItWorks from "@/sections/Calc/Tiktok/TiktokHowItWorks";
 
 export default function Tiktok() {
   return (
