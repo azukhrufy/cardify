@@ -1,4 +1,12 @@
-import { Box, Flex, Grid, Heading, Stack, Text, useTheme } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Grid,
+  Heading,
+  Stack,
+  Text,
+  useTheme,
+} from "@chakra-ui/react";
 
 const VALUE_CARDS = [
   {
@@ -48,7 +56,13 @@ function PetalMotif({ size = 176 }) {
   const petal = "M50 50 C34 36 34 12 50 8 C66 12 66 36 50 50 Z";
 
   return (
-    <svg width={size} height={size} viewBox="0 0 176 176" role="presentation" aria-hidden="true">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 176 176"
+      role="presentation"
+      aria-hidden="true"
+    >
       <defs>
         <linearGradient
           id="petalGradient"
@@ -71,7 +85,11 @@ function PetalMotif({ size = 176 }) {
       <rect width="176" height="176" fill="url(#petalHalo)" />
       <g fill="url(#petalGradient)" transform="translate(22,22) scale(1.32)">
         {[0, 60, 120, 180, 240, 300].map((degrees) => (
-          <path key={degrees} d={petal} transform={`rotate(${degrees} 50 50)`} />
+          <path
+            key={degrees}
+            d={petal}
+            transform={`rotate(${degrees} 50 50)`}
+          />
         ))}
       </g>
     </svg>
@@ -112,10 +130,10 @@ export default function WhoWeAre() {
               Dibuat untuk kreator yang tak mau lagi menebak.
             </Heading>
             <Text fontSize="lg" lineHeight="tall" color="mutedInverse" mt={4}>
-              Cardify adalah alat gratis untuk influencer yang ingin angka yang bisa
-              dipertanggungjawabkan. Unggah data performamu, dan kami ubah menjadi
-              rate card yang bisa kamu kirim ke brand — tanpa markup agensi, tanpa
-              tebak-tebakan benchmark.
+              Cardify adalah alat gratis untuk influencer yang ingin angka yang
+              objektif. Unggah data performamu, dan kami ubah
+              menjadi rate card yang bisa kamu kirim ke brand — tanpa markup
+              agensi, tanpa tebak-tebakan benchmark.
             </Text>
           </Box>
 

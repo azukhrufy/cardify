@@ -139,7 +139,9 @@ export default function Hero() {
             maxW="xl"
             mt={6}
           >
-            Unggah data performamu, dan dapatkan rate card berbasis data\n            untuk TikTok, YouTube, dan Instagram — dalam hitungan menit, bukan\n            minggu.
+            Unggah data performamu, dan dapatkan rate card berbasis data untuk
+            TikTok, YouTube, dan Instagram — dalam hitungan menit, bukan
+            minggu.
           </Text>
 
           <HStack spacing={4} mt={8} flexWrap="wrap">
