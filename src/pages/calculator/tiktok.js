@@ -228,6 +228,9 @@ export default function TikTok() {
         sanitizePdfFilename(results?.fullName) ||
         "creator";
 
+      // Helper-nya memaksa lebar viewport clone ke ukuran desktop, jadi PDF yang
+      // keluar selalu layout 2/3 kolom walau tombolnya ditekan dari HP. Anotasi
+      // watermark diukur ulang di dalam iframe clone, bukan di layout HP ini.
       await exportElementToPdf(element, {
         filename: `Rate Card Tiktok ${name}.pdf`,
         linkSelectors: ["#document-watermark"],
