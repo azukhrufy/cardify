@@ -480,7 +480,7 @@ export default function Instagram() {
                   mt={8}
                 >
                   <Box
-                    bg="instagramGradient.500"
+                    bg="purpleInstagram.500"
                     mt={-8}
                     mx={-8}
                     p={10}
@@ -511,11 +511,12 @@ export default function Instagram() {
                           </Box>
                           <IconButton
                             icon={<FaInstagram />}
-                            colorScheme="instagramBlack"
+                            colorScheme="purpleInstagram"
                             aria-label="Instagram"
                             position="absolute"
+                            rounded='full'
                             bottom="0"
-                            right="0"
+                            right="5"
                             size={{base:'xs',lg:'md'}}
                           />
                         </Box>
@@ -787,7 +788,7 @@ export default function Instagram() {
                       target="_blank"
                       rel="noopener noreferrer"
                       size="lg"
-                      colorScheme="instagramBlack"
+                      colorScheme="tiktokBlack"
                     >
                       <Box>
                         <Text fontSize="sm">Made with </Text>
