@@ -143,7 +143,7 @@ export const NICHES = [
   },
   {
     id: "automotive",
-    label: "Automotive",
+    label: "Otomotif",
     description:
       "Konten otomotif, review mobil/motor, modifikasi, sparepart, dealer",
     platformCPMs: {
