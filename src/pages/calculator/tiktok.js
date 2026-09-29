@@ -10,6 +10,10 @@ import {
   Heading,
   Divider,
   LightMode,
+  Image,
+  DarkMode,
+  Avatar,
+  IconButton,
 } from "@chakra-ui/react";
 import RHFFormProvider from "@/components/hook-form/RHFFormProvider";
 
@@ -33,6 +37,8 @@ import RHFSelect from "@/components/hook-form/RHFSelect";
 import { FaTiktok, FaXmark } from "react-icons/fa6";
 import HomeLayout from "@/Layouts/HomePageLayout";
 import CalculatorTabLayout from "@/Layouts/CalculatorTabLayout";
+import Wordmark from "@/components/Wordmark";
+import { FiDownload } from "react-icons/fi";
 
 const formatIDR = (value) =>
   `Rp ${Math.round(Number(value) || 0).toLocaleString("id-ID")}`;
@@ -80,6 +86,7 @@ export default function TikTok() {
   });
 
   const onSubmit = (data) => {
+    console.log("data", data);
     const nicheConfig = NICHES.find((n) => n.id === data.niche);
     if (!nicheConfig) return;
 
@@ -145,6 +152,9 @@ export default function TikTok() {
 
     setResults({
       niche: nicheConfig.label,
+      displayPicture: data.displayPicture,
+      fullName: data.fullName,
+      username: data.tiktokUsername,
       totalViews,
       viewsPerContent,
       videoCount,
@@ -208,7 +218,9 @@ export default function TikTok() {
           <Container maxW="container.xl">
             <Box mb={8} textAlign="center">
               <Heading as="h1" size="xl" mb={2}>
-                TikTok Rate Card Calculator
+                {results
+                  ? "Hasil Perhitungan Rate Card TikTok"
+                  : "TikTok Rate Card Calculator"}
               </Heading>
               <Text color="mutedInverse" fontSize="lg">
                 Hitung estimasi harga konten TikTok Anda berdasarkan data
@@ -216,173 +228,245 @@ export default function TikTok() {
               </Text>
             </Box>
 
-            <Box
-              bg="surfaceInverse"
-              borderWidth="1px"
-              borderColor="borderInverse"
-              borderRadius="card"
-              p={8}
-            >
-              <Box mb={8}>
-                <Heading size="md" color="fgInverse" mb={4}>
-                  Bagian 1: Identitas Akun
-                </Heading>
-                <Grid
-                  templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-                  gap={6}
-                >
-                  <RHFInput
-                    name="fullName"
-                    label="Nama Lengkap"
-                    placeholder="Nama asli kreator"
-                    isRequired
-                    rules={{ required: "Nama lengkap wajib diisi" }}
-                  />
-                  <RHFInput
-                    name="tiktokUsername"
-                    label="Username TikTok"
-                    placeholder="@username"
-                    isRequired
-                    rules={{ required: "Username TikTok wajib diisi" }}
-                  />
-                  <Box gridColumn={{ base: "span 1", md: "span 2" }}>
-                    <RHFSingleFileUpload
-                      name="displayPicture"
-                      label="Display Picture / Foto Profil (opsional)"
-                      typeFile={["image"]}
-                      helperText="Upload foto profil TikTok Anda (JPG, PNG)."
-                    />
-                  </Box>
-                </Grid>
-              </Box>
-
-              <Divider borderColor="borderInverse" my={8} />
-
-              <Box mb={8}>
-                <Heading size="md" color="fgInverse" mb={4}>
-                  Bagian 2: Data Engagement
-                </Heading>
-                <Grid
-                  templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-                  gap={6}
-                >
-                  <Box gridColumn={{ base: "span 1", md: "span 2" }}>
-                    <RHFSingleFileUpload
-                      name="analyticsScreenshot"
-                      label="Upload Screenshot TikTok Analytics (opsional)"
-                      typeFile={["image"]}
-                      helperText="Upload screenshot analytics TikTok Anda untuk referensi."
-                    />
-                  </Box>
-                  <RHFInput
-                    name="dataPeriod"
-                    label="Periode Data"
-                    placeholder="14 hari terakhir"
-                    isRequired
-                    rules={{ required: "Periode data wajib diisi" }}
-                  />
-                  <RHFNumberInput
-                    name="totalViews"
-                    label="Total Views — Semua Konten"
-                    placeholder="0"
-                    isRequired
-                    min={0}
-                    rules={numberRule("Total views", { min: 1 })}
-                    helperText="Jumlah tayangan SELURUH konten dalam periode ini, bukan per konten. Angka ini nanti dibagi jumlah konten di Bagian 3."
-                  />
-                  <RHFNumberInput
-                    name="totalLikes"
-                    label="Total Likes — Semua Konten"
-                    placeholder="0"
-                    isRequired
-                    min={0}
-                    rules={numberRule("Total likes")}
-                    helperText="Jumlah like dari seluruh konten dalam periode ini."
-                  />
-                  <RHFNumberInput
-                    name="totalComments"
-                    label="Total Comments — Semua Konten"
-                    placeholder="0"
-                    isRequired
-                    min={0}
-                    rules={numberRule("Total comments")}
-                    helperText="Jumlah komentar dari seluruh konten dalam periode ini."
-                  />
-                  <RHFNumberInput
-                    name="totalShares"
-                    label="Total Shares — Semua Konten"
-                    placeholder="0"
-                    isRequired
-                    min={0}
-                    rules={numberRule("Total shares")}
-                    helperText="Jumlah share dari seluruh konten dalam periode ini."
-                  />
-                </Grid>
-              </Box>
-
-              <Divider borderColor="borderInverse" my={8} />
-
-              <Box mb={8}>
-                <Heading size="md" color="fgInverse" mb={4}>
-                  Bagian 3: Parameter Kalkulasi
-                </Heading>
-                <Grid
-                  templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-                  gap={6}
-                >
-                  <RHFSelect
-                    name="niche"
-                    label="Niche / Kategori Konten"
-                    placeholderValue="Pilih niche"
-                    isRequired
-                    bg="white"
-                    color="black"
-                    options={nicheOptions}
-                    rules={{ required: "Niche wajib dipilih" }}
-                  />
-                  <RHFNumberInput
-                    name="videoCount"
-                    label="Jumlah Konten dalam Periode"
-                    placeholder="1"
-                    isRequired
-                    min={1}
-                    rules={numberRule("Jumlah konten", { min: 1 })}
-                    helperText={viewsPerContentHint}
-                  />
-                </Grid>
-              </Box>
-
-              <Box mt={8} mb={8} textAlign="center">
-                <Button
-                  type="submit"
-                  colorScheme="pink"
-                  size="lg"
-                  px={10}
-                  py={3}
-                >
-                  <FaTiktok style={{ marginInlineEnd: "0.5rem" }} />
-                  Hitung Rate Card
-                </Button>
-              </Box>
-            </Box>
-
-            {results && (
+            {!results && (
               <Box
                 bg="surfaceInverse"
                 borderWidth="1px"
                 borderColor="borderInverse"
                 borderRadius="card"
                 p={8}
+              >
+                <Box mb={8}>
+                  <Heading size="md" color="fgInverse" mb={4}>
+                    Bagian 1: Identitas Akun
+                  </Heading>
+                  <Grid
+                    templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+                    gap={6}
+                  >
+                    <RHFInput
+                      name="fullName"
+                      label="Nama Lengkap"
+                      placeholder="Nama asli kreator"
+                      isRequired
+                      rules={{ required: "Nama lengkap wajib diisi" }}
+                    />
+                    <RHFInput
+                      name="tiktokUsername"
+                      label="Username TikTok"
+                      placeholder="@username"
+                      isRequired
+                      rules={{ required: "Username TikTok wajib diisi" }}
+                    />
+                    <Box gridColumn={{ base: "span 1", md: "span 2" }}>
+                      <RHFSingleFileUpload
+                        name="displayPicture"
+                        label="Display Picture / Foto Profil (opsional)"
+                        typeFile={["image"]}
+                        helperText="Upload foto profil TikTok Anda (JPG, PNG)."
+                      />
+                    </Box>
+                  </Grid>
+                </Box>
+
+                <Divider borderColor="borderInverse" my={8} />
+
+                <Box mb={8}>
+                  <Heading size="md" color="fgInverse" mb={4}>
+                    Bagian 2: Data Engagement
+                  </Heading>
+                  <Grid
+                    templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+                    gap={6}
+                  >
+                    <Box gridColumn={{ base: "span 1", md: "span 2" }}>
+                      <RHFSingleFileUpload
+                        name="analyticsScreenshot"
+                        label="Upload Screenshot TikTok Analytics (opsional)"
+                        typeFile={["image"]}
+                        helperText="Upload screenshot analytics TikTok Anda untuk referensi."
+                      />
+                    </Box>
+                    <RHFSelect
+                      name="dataPeriod"
+                      label="Periode Data"
+                      placeholder="Pilih periode data"
+                      options={[
+                        { value: "7", label: "7 hari terakhir" },
+                        { value: "14", label: "14 hari terakhir" },
+                        { value: "30", label: "30 hari terakhir" },
+                      ]}
+                      isRequired
+                      rules={{ required: "Periode data wajib diisi" }}
+                    />
+                    <RHFNumberInput
+                      name="totalViews"
+                      label="Total Views — Semua Konten"
+                      placeholder="0"
+                      isRequired
+                      min={0}
+                      rules={numberRule("Total views", { min: 1 })}
+                      helperText="Jumlah tayangan SELURUH konten dalam periode ini, bukan per konten. Angka ini nanti dibagi jumlah konten di Bagian 3."
+                    />
+                    <RHFNumberInput
+                      name="totalLikes"
+                      label="Total Likes — Semua Konten"
+                      placeholder="0"
+                      isRequired
+                      min={0}
+                      rules={numberRule("Total likes")}
+                      helperText="Jumlah like dari seluruh konten dalam periode ini."
+                    />
+                    <RHFNumberInput
+                      name="totalComments"
+                      label="Total Comments — Semua Konten"
+                      placeholder="0"
+                      isRequired
+                      min={0}
+                      rules={numberRule("Total comments")}
+                      helperText="Jumlah komentar dari seluruh konten dalam periode ini."
+                    />
+                    <RHFNumberInput
+                      name="totalShares"
+                      label="Total Shares — Semua Konten"
+                      placeholder="0"
+                      isRequired
+                      min={0}
+                      rules={numberRule("Total shares")}
+                      helperText="Jumlah share dari seluruh konten dalam periode ini."
+                    />
+                  </Grid>
+                </Box>
+
+                <Divider borderColor="borderInverse" my={8} />
+
+                <Box mb={8}>
+                  <Heading size="md" color="fgInverse" mb={4}>
+                    Bagian 3: Parameter Kalkulasi
+                  </Heading>
+                  <Grid
+                    templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+                    gap={6}
+                  >
+                    <RHFSelect
+                      name="niche"
+                      label="Niche / Kategori Konten"
+                      placeholderValue="Pilih niche"
+                      isRequired
+                      bg="white"
+                      color="black"
+                      options={nicheOptions}
+                      rules={{ required: "Niche wajib dipilih" }}
+                    />
+                    <RHFNumberInput
+                      name="videoCount"
+                      label="Jumlah Konten dalam Periode"
+                      placeholder="1"
+                      isRequired
+                      min={1}
+                      rules={numberRule("Jumlah konten", { min: 1 })}
+                      helperText={viewsPerContentHint}
+                    />
+                  </Grid>
+                </Box>
+
+                <Box mt={8} mb={8} textAlign="center">
+                  <Button
+                    type="submit"
+                    colorScheme="pink"
+                    size="lg"
+                    px={10}
+                    py={3}
+                  >
+                    <FaTiktok style={{ marginInlineEnd: "0.5rem" }} />
+                    Hitung Rate Card
+                  </Button>
+                </Box>
+              </Box>
+            )}
+
+            {results && (
+              <Box
+                id="tiktok-results"
+                bg="surfaceInverse"
+                borderWidth="1px"
+                borderColor="borderInverse"
+                borderRadius="2xl"
+                overflow="hidden"
+                p={8}
                 mt={8}
               >
-                <Heading size="lg" color="fgInverse" mb={6} textAlign="center">
-                  Hasil Perhitungan Rate Card TikTok
-                </Heading>
+                <Box
+                  bg="tiktokBlack.500"
+                  mt={-8}
+                  mx={-8}
+                  p={10}
+                  position="relative"
+                >
+                  <DarkMode>
+                    <Grid
+                      gridGap={10}
+                      templateColumns="max-content 1fr"
+                      alignItems="center"
+                    >
+                      <Box position="relative">
+                        <Box rounded="full" overflow="hidden" w="25ch" h="25ch">
+                          <Image
+                            src={results?.displayPicture}
+                            alt="Display Picture"
+                            objectFit="cover"
+                          />
+                        </Box>
+                        <IconButton
+                          icon={<FaTiktok />}
+                          colorScheme="tiktokBlack"
+                          aria-label="TikTok"
+                          position="absolute"
+                          bottom="0"
+                          right="5"
+                        />
+                      </Box>
+                      <Box>
+                        <Text
+                          as="h1"
+                          fontSize="4xl"
+                          fontWeight="bold"
+                          color="bgInverse"
+                        >
+                          {results.fullName}
+                        </Text>
+                        <Text
+                          color="muted"
+                          as="h1"
+                          fontSize="2xl"
+                          fontWeight="bold"
+                        >
+                          {results.username}
+                        </Text>
+                        <Text
+                          color="bgInverse"
+                          as="h1"
+                          fontSize="lg"
+                          fontWeight="bold"
+                        >
+                          {results.niche}
+                        </Text>
+                      </Box>
+                    </Grid>
+                  </DarkMode>
+                  <IconButton
+                    icon={<FiDownload />}
+                    position="absolute"
+                    top="5"
+                    right="5"
+                  />
+                </Box>
 
                 <Grid
                   templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
                   gap={6}
                   mb={8}
+                  mt={8}
                 >
                   <Box>
                     <Text color="mutedInverse" fontSize="sm">
@@ -544,7 +628,7 @@ export default function TikTok() {
                     textAlign="center"
                   >
                     <Text color="white" fontSize="xs" textTransform="uppercase">
-                      Views per Konten
+                      Rata - Rata Views per Konten
                     </Text>
                     <Text color="white" fontSize="2xl" fontWeight="bold">
                       {Math.round(results.viewsPerContent).toLocaleString(
@@ -562,7 +646,7 @@ export default function TikTok() {
                     textAlign="center"
                   >
                     <Text color="white" fontSize="xs" textTransform="uppercase">
-                      Harga per Konten
+                      Estimasi Harga per Konten
                     </Text>
                     <Text color="white" fontSize="2xl" fontWeight="bold">
                       {formatIDR(results.ratePerVideo)}
@@ -580,20 +664,28 @@ export default function TikTok() {
                     jumlah konten yang dipesan.
                   </Text>
                 </Box>
-
                 <Box mt={6} textAlign="center">
                   <Button
-                    onClick={handleReset}
-                    colorScheme="gray"
-                    variant="outline"
+                    id="document-watermark"
+                    size="lg"
+                    colorScheme="tiktokBlack"
+                    href="https://cardify.my.id/"
                   >
-                    <FaXmark style={{ marginInlineEnd: "0.5rem" }} />
-                    Hitung Ulang
+                    <Box>
+                      <Text fontSize="sm">Made with </Text>
+                      <Wordmark />
+                    </Box>
                   </Button>
                 </Box>
               </Box>
             )}
           </Container>
+          <Box mt={6} textAlign="center">
+            <Button onClick={handleReset} colorScheme="gray" variant="outline">
+              <FaXmark style={{ marginInlineEnd: "0.5rem" }} />
+              Hitung Ulang
+            </Button>
+          </Box>
         </Box>
       </LightMode>
     </RHFFormProvider>

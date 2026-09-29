@@ -68,6 +68,10 @@ const ALL_TYPES = [...FILE_TYPE_ACCEPT.image, ...FILE_TYPE_ACCEPT.document];
  *   isRequired    — di-pass ke FormControl (opsional)
  *   isDisabled    — menonaktifkan input secara manual (opsional)
  *
+ * Nilai field yang disimpan adalah data URL base64 (mis.
+ * "data:image/png;base64,iVBORw0KGgo..."), bukan objek File — jadi bisa langsung
+ * dipakai sebagai src gambar atau dikirim ke API. File kosong → null.
+ *
  * Contoh pemakaian:
  *   <RHFSingleFileUpload name="displayPicture" label="Display Picture" typeFile={['image']} />
  *   <RHFSingleFileUpload name="document" label="Upload Dokumen" />               // kedua-duanya
@@ -89,6 +93,12 @@ export default function RHFSingleFileUpload({
 
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  // Metadata file asli hanya untuk tampilan — nilai field-nya sendiri adalah base64
+  const [fileMeta, setFileMeta] = useState(null);
+  const [isReading, setIsReading] = useState(false);
+  // Token pembacaan: hasil FileReader yang sudah basi (file diganti/dihapus saat
+  // masih dibaca) tidak boleh menimpa nilai field.
+  const readTokenRef = useRef(0);
 
   // Tentukan jenis file yang di-accept. typeFile tak dikenal → jangan kirim accept kosong
   // (accept="" berarti "terima semua" di browser).
@@ -96,7 +106,7 @@ export default function RHFSingleFileUpload({
   const acceptedTypes = typeFile.length === 0 ? ALL_TYPES : mappedTypes;
   const acceptValue = acceptedTypes.join(",");
 
-  const disabled = isDisabled || formState.isSubmitting;
+  const disabled = isDisabled || formState.isSubmitting || isReading;
 
   // Validasi tipe file: cocokkan MIME dulu, lalu ekstensi (untuk file tanpa MIME)
   const isFileAccepted = (file) => {
@@ -109,8 +119,18 @@ export default function RHFSingleFileUpload({
   const typeLabel =
     typeFile.length > 0 ? typeFile.join(", ").toUpperCase() : "GAMBAR & DOKUMEN";
 
-  // Terima file: validasi dulu, baru simpan. File ditolak → tampilkan error di bawah field.
-  const acceptFile = (file) => {
+  // FileReader membungkus hasil dalam Promise supaya alur baca bisa di-await
+  const readFileAsDataURL = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+
+  // Terima file: validasi tipe, baca sebagai data URL base64, baru simpan ke form.
+  // File ditolak / gagal dibaca → tampilkan error di bawah field.
+  const acceptFile = async (file) => {
     if (!file) return;
     if (!isFileAccepted(file)) {
       setError(name, {
@@ -120,7 +140,22 @@ export default function RHFSingleFileUpload({
       return;
     }
     clearErrors(name);
-    field.onChange(file);
+    const token = ++readTokenRef.current;
+    setIsReading(true);
+    try {
+      const dataUrl = await readFileAsDataURL(file);
+      if (token !== readTokenRef.current) return; // file sudah diganti/dihapus
+      setFileMeta({ name: file.name, size: file.size });
+      field.onChange(dataUrl);
+    } catch {
+      if (token !== readTokenRef.current) return;
+      setError(name, {
+        type: "manual",
+        message: "Gagal membaca file. Silakan pilih ulang.",
+      });
+    } finally {
+      if (token === readTokenRef.current) setIsReading(false);
+    }
   };
 
   const openFileDialog = () => {
@@ -171,13 +206,19 @@ export default function RHFSingleFileUpload({
   };
 
   const clearFile = () => {
-    // Reset value di form DAN elemen input, supaya file yang sama bisa dipilih lagi
+    // Reset value di form DAN elemen input, supaya file yang sama bisa dipilih lagi.
+    // Token di-bump agar pembacaan yang masih jalan tidak mengisi ulang field.
+    readTokenRef.current += 1;
     clearErrors(name);
+    setFileMeta(null);
+    setIsReading(false);
     field.onChange(null);
     if (inputRef.current) inputRef.current.value = "";
   };
 
-  const fileValue = field.value instanceof File ? field.value : null;
+  // Ada isi kalau field sudah berisi string data URL (mis. dari defaultValues hasil restore)
+  const hasFile = typeof field.value === "string" && field.value.length > 0;
+  const fileValue = fileMeta || (hasFile ? { name: "File tersimpan", size: null } : null);
 
   return (
     <FormControl
@@ -234,7 +275,11 @@ export default function RHFSingleFileUpload({
         </VisuallyHidden>
 
         <Text mb={2} color="gray.600">
-          {isDragging ? "📁 Lepas file di sini" : "📁 Klik atau drag file ke sini"}
+          {isReading
+            ? "⏳ Membaca file..."
+            : isDragging
+              ? "📁 Lepas file di sini"
+              : "📁 Klik atau drag file ke sini"}
         </Text>
         <Text fontSize="sm" color="gray.500">
           Jenis file diterima: {typeLabel}
@@ -259,9 +304,11 @@ export default function RHFSingleFileUpload({
             >
               ✅ {fileValue.name}
             </Text>
-            <Text fontSize="xs" color="gray.500">
-              {(fileValue.size / 1024).toFixed(1)} KB
-            </Text>
+            {typeof fileValue.size === "number" && (
+              <Text fontSize="xs" color="gray.500">
+                {(fileValue.size / 1024).toFixed(1)} KB
+              </Text>
+            )}
             <Text
               as="span"
               display="inline-block"
