@@ -56,7 +56,7 @@ export default function Header() {
           <Link href="/" color={router?.pathname === "/" ? "fg" : "muted"}>
             Beranda
           </Link>
-          <Link
+          {/* <Link
             href="how-it-works"
             fontSize="sm"
             color={router?.pathname === "/how-it-works" ? "fg" : "muted"}
@@ -64,7 +64,7 @@ export default function Header() {
             _hover={{ color: "fg" }}
           >
             Cara Kerja
-          </Link>
+          </Link> */}
           <Button as="a" href="/calculator" variant="primary" size="sm">
             Hitung Rate Card Saya
           </Button>
