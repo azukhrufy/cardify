@@ -1,5 +1,7 @@
 import { useForm, FormProvider } from "react-hook-form";
-import { Box, Button, Container, Grid, Text, Select, Flex, Heading, Divider, VStack, useRouter } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
+import { Box, Button, Container, Grid, Text, Select, Flex, Heading, Divider, VStack } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 import NextLink from "next/link";
 
 import { NICHES } from "@/constants/niches";
@@ -10,7 +12,7 @@ import RHFSingleFileUpload from "@/components/hook-form/RHFSingleFileUpload";
 import RHFInput from "@/components/hook-form/RHFInput";
 import RHFNumberInput from "@/components/hook-form/RHFNumberInput";
 
-import { FaTiktok, FaInstagram, FaYoutube, FaUpload, FaTimes } from "react-icons/fa6";
+import { FaTiktok, FaInstagram, FaYoutube, FaUpload, FaXmark } from "react-icons/fa6";
 
 const TIKTOK_DURATION_OPTIONS = CONTENT_TYPES.tiktok.find(ct => ct.id === 'shortVideo')?.durationOptions || [];
 
@@ -75,11 +77,11 @@ export default function TikTok() {
       }),
     };
 
-    window.__tiktokCalcResults = results;
+    setResults(results);
     router.push("/calculator/tiktok?results=1");
   };
 
-  const results = window.__tiktokCalcResults || null;
+  const [results, setResults] = useState(null);
 
   const nicheOptions = NICHES.map(n => ({
     value: n.id,
@@ -361,7 +363,7 @@ export default function TikTok() {
                   colorScheme="gray"
                   variant="outline"
                 >
-                  <FaTimes mr={2} />
+                  <FaXmark mr={2} />
                   Hitung Ulang
                 </Button>
               </Box>
