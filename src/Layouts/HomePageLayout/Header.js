@@ -92,17 +92,17 @@ export default function Header() {
         >
           <Stack spacing={4}>
             <Link
-              href="#how-it-works"
+              href="/"
               fontSize="sm"
               color="muted"
               onClick={onToggle}
               _hover={{ color: "fg" }}
             >
-              Cara Kerja
+              Beranda
             </Link>
             <Button
               as="a"
-              href="#how-it-works"
+              href="/calculator"
               variant="primary"
               size="sm"
               w="full"
