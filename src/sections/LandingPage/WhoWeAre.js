@@ -3,7 +3,7 @@ import { Box, Flex, Grid, Heading, Stack, Text, useTheme } from "@chakra-ui/reac
 const VALUE_CARDS = [
   {
     title: "Angkamu sendiri, bukan milik orang lain",
-    body: "Setiap tarif dihitung dari dasbor yang kamu unggah: tayangan, engagement, jangkauan, dan metrik yang benar-benar diperhatikan brand.",
+    body: "Setiap tarif dihitung dari data performa yang kamu masukkan: tayangan, engagement, jangkauan, dan metrik yang benar-benar diperhatikan brand.",
   },
   {
     title: "Tiga platform, tarif berbeda",
@@ -11,15 +11,15 @@ const VALUE_CARDS = [
   },
   {
     title: "Gratis, instan, tanpa akun",
-    body: "Unggah, hitung, unduh. Tanpa daftar, tanpa paywall, tanpa menunggu persetujuan. Rate card-mu milikmu.",
+    body: "Masukkan data, hitung, unduh. Tanpa daftar, tanpa paywall, tanpa menunggu persetujuan. Rate card-mu milikmu.",
   },
 ];
 
 const STEPS = [
   {
     number: "01",
-    title: "Unggah dasbormu",
-    body: "Masukkan tangkapan layar atau ekspor dasbor media sosialmu.",
+    title: "Masukkan data performamu",
+    body: "Isi data performa media sosialmu sesuai dengan analytics terbaru.",
   },
   {
     number: "02",
