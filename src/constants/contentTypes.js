@@ -15,6 +15,13 @@ export const CONTENT_TYPES = {
       cpmRef: 'feedPost',
     },
     {
+      id: 'carousel',
+      label: 'Instagram Carousel',
+      description: 'Multi-slide post dengan save rate tinggi',
+      durationOptions: null,
+      cpmRef: 'feedPost',
+    },
+    {
       id: 'reels',
       label: 'Instagram Reels',
       description: 'Video reels, breakdown berdasarkan durasi',
