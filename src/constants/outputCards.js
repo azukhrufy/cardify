@@ -1,124 +1,98 @@
 import { NICHES } from './niches';
-import { calculateRate } from './formulas';
+import { CONTENT_TYPES } from './contentTypes';
+import {
+  calculateRate,
+  finalizeRate,
+  formatFloor,
+  DEFAULT_ER_BENCHMARK,
+} from './formulas';
 
+/**
+ * Metrik reach mana yang dipakai per content type. Fallback ke `metrics.avgViews`.
+ */
+const IMPRESSION_METRICS = {
+  instagram: {
+    story: 'avgStoryReach',
+    feedPost: 'avgFeedReach',
+    reels: 'avgReelsViews',
+  },
+};
+
+/**
+ * Format acuan per platform untuk menskalakan floor. Format ini memakai
+ * `MINIMUM_RATE` apa adanya; format lain diskalakan dari rasio CPM-nya.
+ */
+const FLOOR_REFERENCE_FORMAT = {
+  instagram: 'feedPost',
+  tiktok: 'video',
+  youtube: 'integration',
+};
+
+/**
+ * Susun kartu output harga per content type.
+ *
+ * Model yang dipakai sama dengan halaman TikTok: **CPM per format adalah acuan
+ * tunggal** (`platformCPMs[platform][format]` lewat `contentTypes[].cpmRef`),
+ * dan `finalizeRate()` menerapkan floor + pembulatan per deliverable. Floor-nya
+ * diskalakan per format lewat `formatFloor()` supaya di volume rendah harga
+ * antar format tidak menempel jadi satu angka.
+ *
+ * Belum dipakai halaman mana pun — Instagram/YouTube masih stub.
+ */
 export function buildOutputCards({ platform, nicheId, metrics }) {
-  const nicheConfig = NICHES.find(n => n.id === nicheId);
+  const nicheConfig = NICHES.find((n) => n.id === nicheId);
   if (!nicheConfig) return [];
   const platformConfig = nicheConfig.platformCPMs[platform];
   if (!platformConfig) return [];
 
-  const cards = [];
+  const contentTypes = CONTENT_TYPES[platform];
+  if (!contentTypes) return [];
 
-  if (platform === 'instagram') {
-    // Story
-    cards.push({
-      contentType: 'story',
-      title: 'Instagram Story',
-      rate: calculateRate({
-        impressions: metrics.avgStoryReach || metrics.avgViews,
-        cpm: platformConfig.story,
-        engagementRate: metrics.engagementRate,
-        nicheERBenchmark: 3.0,
-        contentTypeMultiplier: 0.6,
-      }),
-      note: 'Per slide (24 jam)'
+  const rateFor = (impressions, cpm, durationMultiplier = 1) =>
+    calculateRate({
+      impressions,
+      cpm,
+      engagementRate: metrics.engagementRate,
+      nicheERBenchmark: DEFAULT_ER_BENCHMARK,
+      nicheMultiplier: nicheConfig.engagementMultiplier,
+      durationMultiplier,
     });
-    // Feed Post
-    cards.push({
-      contentType: 'feedPost',
-      title: 'Instagram Feed Post',
-      rate: calculateRate({
-        impressions: metrics.avgFeedReach || metrics.avgViews,
-        cpm: platformConfig.feedPost,
-        engagementRate: metrics.engagementRate,
-        nicheERBenchmark: 3.0,
-        contentTypeMultiplier: 1.0,
-      }),
-      note: 'Static post / foto'
-    });
-    // Reels duration options
-    const reelDurations = [
-      { label: '<15s', mult: 0.8 },
-      { label: '15-30s', mult: 1.0 },
-      { label: '30-60s', mult: 1.2 },
-    ];
-    reelDurations.forEach(d => {
-      cards.push({
-        contentType: 'reels',
-        title: `Instagram Reels (${d.label})`,
-        rate: calculateRate({
-          impressions: metrics.avgReelsViews || metrics.avgViews,
-          cpm: platformConfig.reels,
-          engagementRate: metrics.engagementRate,
-          nicheERBenchmark: 3.0,
-          contentTypeMultiplier: 1.2,
-          durationMultiplier: d.mult,
-        }),
-        note: d.label,
-      });
-    });
-  }
 
-  if (platform === 'tiktok') {
-    const tiktokDurations = [
-      { label: '<15s', mult: 0.8 },
-      { label: '15-30s', mult: 1.0 },
-      { label: '30-60s', mult: 1.2 },
-      { label: '>60s', mult: 1.4 },
-    ];
-    tiktokDurations.forEach(d => {
-      cards.push({
-        contentType: 'shortVideo',
-        title: `TikTok Video (${d.label})`,
-        rate: calculateRate({
-          impressions: metrics.avgViews,
-          cpm: platformConfig.video,
-          engagementRate: metrics.engagementRate,
-          nicheERBenchmark: 5.0,
-          contentTypeMultiplier: 1.0,
-          durationMultiplier: d.mult,
-        }),
-        note: d.label,
-      });
-    });
-  }
+  const referenceCpm =
+    platformConfig[FLOOR_REFERENCE_FORMAT[platform]] ??
+    Object.values(platformConfig)[0];
 
-  if (platform === 'youtube') {
-    // Integration
-    cards.push({
-      contentType: 'integration',
-      title: 'YouTube Integration / Shoutout',
-      rate: calculateRate({
-        impressions: metrics.avgViews,
-        cpm: platformConfig.integration,
-        engagementRate: metrics.engagementRate,
-        nicheERBenchmark: 2.5,
-        contentTypeMultiplier: 1.0,
-      }),
-      note: '30-60s dalam video yang ada',
-    });
-    // Dedicated video durations
-    const ytDurations = [
-      { label: '5-10m', mult: 1.0 },
-      { label: '10-20m', mult: 1.3 },
-      { label: '>20m', mult: 1.6 },
-    ];
-    ytDurations.forEach(d => {
-      cards.push({
-        contentType: 'dedicatedVideo',
-        title: `YouTube Dedicated Video (${d.label})`,
-        rate: calculateRate({
-          impressions: metrics.avgViews,
-          cpm: platformConfig.dedicatedVideo,
-          engagementRate: metrics.engagementRate,
-          nicheERBenchmark: 2.5,
-          contentTypeMultiplier: 1.5,
-          durationMultiplier: d.mult,
-        }),
-        note: d.label,
-      });
-    });
-  }
+  return contentTypes.flatMap((ct) => {
+    const cpm = platformConfig[ct.cpmRef];
+    if (!cpm) return [];
 
-  return cards;
+    const impressions = metrics[IMPRESSION_METRICS[platform]?.[ct.id]] || metrics.avgViews;
+
+    // Tanpa reach positif, base rate jadi 0 atau NaN dan finalizeRate
+    // menaikkannya ke floor — kartu akan menampilkan harga masuk akal yang
+    // tidak berasal dari data apa pun. Lebih baik kartunya tidak muncul.
+    // Cek `> 0`, bukan `Number.isFinite`: null dan "" sama-sama koersi ke 0.
+    if (!(Number(impressions) > 0)) return [];
+
+    const floor = formatFloor(cpm, referenceCpm);
+
+    // Format tanpa breakdown durasi jadi satu kartu.
+    if (!ct.durationOptions) {
+      return [
+        {
+          contentType: ct.id,
+          title: ct.label,
+          rate: finalizeRate(rateFor(impressions, cpm), floor),
+          note: ct.description,
+        },
+      ];
+    }
+
+    return ct.durationOptions.map((dur) => ({
+      contentType: ct.id,
+      title: `${ct.label} (${dur.label})`,
+      rate: finalizeRate(rateFor(impressions, cpm, dur.multiplierExtra), floor),
+      note: dur.label,
+    }));
+  });
 }

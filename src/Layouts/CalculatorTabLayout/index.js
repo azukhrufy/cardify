@@ -2,6 +2,7 @@ import { Flex, Button, Box, Container } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import NextLink from "next/link";
 import { FaTiktok, FaInstagram, FaYoutube } from "react-icons/fa6";
+import CalcHero from "@/components/CalcHero";
 
 const TAB_BUTTONS = [
   {
@@ -29,6 +30,7 @@ export default function CalculatorTabLayout({ children }) {
 
   return (
     <Box bg="white">
+      <CalcHero />
       <Flex w="100%" justifyContent="center" gap={6} py="50px">
         {TAB_BUTTONS.map((tab) => (
           <Button

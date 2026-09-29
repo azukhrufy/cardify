@@ -5,14 +5,14 @@ export const CONTENT_TYPES = {
       label: 'Instagram Story',
       description: 'Story 24 jam, per slide',
       durationOptions: null,
-      multiplierRef: 'story',
+      cpmRef: 'story',
     },
     {
       id: 'feedPost',
       label: 'Instagram Feed Post',
       description: 'Foto/static post di feed',
       durationOptions: null,
-      multiplierRef: 'feedPost',
+      cpmRef: 'feedPost',
     },
     {
       id: 'reels',
@@ -23,7 +23,7 @@ export const CONTENT_TYPES = {
         { label: '15 – 30 detik', durationRange: '15-30s', multiplierExtra: 1.0 },
         { label: '30 – 60 detik', durationRange: '30-60s', multiplierExtra: 1.2 },
       ],
-      multiplierRef: 'reels',
+      cpmRef: 'reels',
     },
   ],
   tiktok: [
@@ -37,21 +37,21 @@ export const CONTENT_TYPES = {
         { label: '30 – 60 detik', durationRange: '30-60s', multiplierExtra: 1.2 },
         { label: '> 60 detik', durationRange: '>60s', multiplierExtra: 1.4 },
       ],
-      multiplierRef: 'shortVideo',
+      cpmRef: 'video',
     },
     {
       id: 'photoMode',
       label: 'TikTok Carousel / Photo Mode',
-      description: 'Konten foto/karousel, breakdown berdasarkan jumlah gambar',
+      description: 'Konten foto/karousel dalam satu unggahan',
       durationOptions: null,
-      multiplierRef: 'photoMode',
+      cpmRef: 'photoMode',
     },
     {
       id: 'integration',
       label: 'TikTok Integration / Brand Mention',
       description: 'Mention/integrasi merek dalam video yang ada (opsional add-on)',
       durationOptions: null,
-      multiplierRef: 'integration',
+      cpmRef: 'integration',
     },
     {
       id: 'dedicatedVideo',
@@ -62,7 +62,7 @@ export const CONTENT_TYPES = {
         { label: '30 – 60 detik', durationRange: '30-60s', multiplierExtra: 1.2 },
         { label: '> 60 detik', durationRange: '>60s', multiplierExtra: 1.4 },
       ],
-      multiplierRef: 'dedicatedVideo',
+      cpmRef: 'dedicatedVideo',
     },
   ],
   youtube: [
@@ -71,7 +71,7 @@ export const CONTENT_TYPES = {
       label: 'YouTube Integration / Shoutout',
       description: 'Pengingat/integrasi merek dalam video yang ada (30-60 detik)',
       durationOptions: null,
-      multiplierRef: 'integration',
+      cpmRef: 'integration',
     },
     {
       id: 'dedicatedVideo',
@@ -82,7 +82,7 @@ export const CONTENT_TYPES = {
         { label: '10 – 20 menit', durationRange: '10-20m', multiplierExtra: 1.3 },
         { label: '> 20 menit', durationRange: '>20m', multiplierExtra: 1.6 },
       ],
-      multiplierRef: 'dedicatedVideo',
+      cpmRef: 'dedicatedVideo',
     },
   ],
 };

@@ -42,6 +42,16 @@ const theme = extendTheme({
       cyan: "#25F4EE",
       red: "#FE2C55",
     },
+    // Instagram is the one mark here that is a gradient rather than a flat
+    // colour, so it gets stops instead of a single value. They are the tile's
+    // ramp read bottom-left to top-right, which is the direction the mark runs.
+    instagram: {
+      yellow: "#FEDA75",
+      orange: "#FA7E1E",
+      pink: "#D62976",
+      purple: "#962FBF",
+      blue: "#4F5BD5",
+    },
     // Chakra colorScheme scales (50-900) for per-platform CTAs, anchored on
     // each brand's signature colour so `colorScheme="tiktokBlack"` etc. work
     // on Button/Badge/etc. out of the box.

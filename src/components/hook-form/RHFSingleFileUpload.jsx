@@ -1,6 +1,14 @@
 import { useFormContext, useController } from "react-hook-form";
-import { FormControl, FormLabel, FormErrorMessage, FormHelperText, Box, Text } from "@chakra-ui/react";
-import { useState } from "react";
+import {
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  FormHelperText,
+  Box,
+  Text,
+  VisuallyHidden,
+} from "@chakra-ui/react";
+import { useRef, useState } from "react";
 
 // Mapping tipe file — dijaga di sini agar konsisten di seluruh form
 const FILE_TYPE_ACCEPT = {
@@ -11,7 +19,7 @@ const FILE_TYPE_ACCEPT = {
     "image/gif",
     "image/webp",
     "image/svg+xml",
-    "image/ico",
+    "image/x-icon",
   ],
   // Dokumen
   document: [
@@ -27,6 +35,27 @@ const FILE_TYPE_ACCEPT = {
   ],
 };
 
+// Ekstensi cadangan saat browser tidak mengisi file.type (mis. file dari OS tertentu)
+const MIME_EXTENSIONS = {
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/png": [".png"],
+  "image/gif": [".gif"],
+  "image/webp": [".webp"],
+  "image/svg+xml": [".svg"],
+  "image/x-icon": [".ico"],
+  "application/pdf": [".pdf"],
+  "application/msword": [".doc"],
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+  "application/vnd.ms-excel": [".xls"],
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+  "application/vnd.ms-powerpoint": [".ppt"],
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": [".pptx"],
+  "text/plain": [".txt"],
+  "text/csv": [".csv"],
+};
+
+const ALL_TYPES = [...FILE_TYPE_ACCEPT.image, ...FILE_TYPE_ACCEPT.document];
+
 /**
  * RHFSingleFileUpload — input upload file tunggal (satu file per field).
  *
@@ -36,74 +65,144 @@ const FILE_TYPE_ACCEPT = {
  *   helperText    — teks bantuan di bawah (opsional)
  *   typeFile      — array string: ['image'], ['document'], atau [] untuk menerima keduanya.
  *                   Default [] (terima semua).
- *   isRequired    — dari rest, di-pass ke FormControl (opsional)
+ *   isRequired    — di-pass ke FormControl (opsional)
+ *   isDisabled    — menonaktifkan input secara manual (opsional)
  *
  * Contoh pemakaian:
  *   <RHFSingleFileUpload name="displayPicture" label="Display Picture" typeFile={['image']} />
  *   <RHFSingleFileUpload name="document" label="Upload Dokumen" />               // kedua-duanya
  */
-export default function RHFSingleFileUpload({ name, label, helperText, typeFile = [], ...rest }) {
-  const { control, formState } = useFormContext();
-  const { field, fieldState: { error } } = useController({ name, control });
+export default function RHFSingleFileUpload({
+  name,
+  label,
+  helperText,
+  typeFile = [],
+  isRequired,
+  isDisabled,
+  ...rest
+}) {
+  const { control, formState, setError, clearErrors } = useFormContext();
+  const {
+    field,
+    fieldState: { error },
+  } = useController({ name, control });
+
+  const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Tentukan jenis file yang di-accept
-  const acceptedTypes = typeFile.length > 0
-    ? typeFile.flatMap((t) => FILE_TYPE_ACCEPT[t] || [])
-    : [...FILE_TYPE_ACCEPT.image, ...FILE_TYPE_ACCEPT.document];
-
+  // Tentukan jenis file yang di-accept. typeFile tak dikenal → jangan kirim accept kosong
+  // (accept="" berarti "terima semua" di browser).
+  const mappedTypes = typeFile.flatMap((t) => FILE_TYPE_ACCEPT[t] || []);
+  const acceptedTypes = typeFile.length === 0 ? ALL_TYPES : mappedTypes;
   const acceptValue = acceptedTypes.join(",");
 
-  // Handler: ganti file saat input dipilih
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      field.onChange(file);
-    }
-  };
+  const disabled = isDisabled || formState.isSubmitting;
 
-  // Drag & drop
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer?.files?.[0];
-    if (file) {
-      // Validasi cepat: pastikan juga include di acceptedTypes
-      const isAccepted =
-        acceptedTypes.some(
-          (t) => file.type === t || file.type.startsWith(t.split("/")[0] + "/")
-        ) || acceptedTypes.length === 0;
-      if (isAccepted) {
-        field.onChange(file);
-      }
-    }
-  };
-
-  const clearFile = () => {
-    // Reset value di form
-    field.onChange(null);
+  // Validasi tipe file: cocokkan MIME dulu, lalu ekstensi (untuk file tanpa MIME)
+  const isFileAccepted = (file) => {
+    if (acceptedTypes.length === 0) return true;
+    if (file.type && acceptedTypes.includes(file.type)) return true;
+    const ext = `.${(file.name.split(".").pop() || "").toLowerCase()}`;
+    return acceptedTypes.some((t) => (MIME_EXTENSIONS[t] || []).includes(ext));
   };
 
   const typeLabel =
     typeFile.length > 0 ? typeFile.join(", ").toUpperCase() : "GAMBAR & DOKUMEN";
 
+  // Terima file: validasi dulu, baru simpan. File ditolak → tampilkan error di bawah field.
+  const acceptFile = (file) => {
+    if (!file) return;
+    if (!isFileAccepted(file)) {
+      setError(name, {
+        type: "manual",
+        message: `Tipe file tidak didukung. Format yang diterima: ${typeLabel}.`,
+      });
+      return;
+    }
+    clearErrors(name);
+    field.onChange(file);
+  };
+
+  const openFileDialog = () => {
+    if (disabled) return;
+    inputRef.current?.click();
+  };
+
+  // Handler: ganti file saat input dipilih
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      acceptFile(file);
+    } else {
+      // User membatalkan dialog — kosongkan agar pemilihan berikutnya tetap memicu onChange
+      e.target.value = "";
+    }
+  };
+
+  // Drag & drop. dragenter/dragleave ikut terpicu oleh elemen anak, jadi baru
+  // dianggap keluar kalau kursor benar-benar meninggalkan area drop.
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (disabled) return;
+    setIsDragging(true);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    if (disabled) return;
+    e.dataTransfer.dropEffect = "copy";
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (disabled) return;
+    acceptFile(e.dataTransfer?.files?.[0]);
+  };
+
+  const clearFile = () => {
+    // Reset value di form DAN elemen input, supaya file yang sama bisa dipilih lagi
+    clearErrors(name);
+    field.onChange(null);
+    if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const fileValue = field.value instanceof File ? field.value : null;
+
   return (
-    <FormControl isInvalid={!!error} isDisabled={formState.isSubmitting} isRequired={rest.isRequired}>
+    <FormControl
+      isInvalid={!!error}
+      isDisabled={disabled}
+      isRequired={isRequired}
+      {...rest}
+    >
       {label && <FormLabel htmlFor={name}>{label}</FormLabel>}
 
       <Box
         onDrop={handleDrop}
+        onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
+        onClick={openFileDialog}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openFileDialog();
+          }
+        }}
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled}
         bg={isDragging ? "blue.50" : "gray.50"}
         borderWidth="2px"
         borderColor={isDragging ? "blue.400" : "gray.300"}
@@ -111,19 +210,28 @@ export default function RHFSingleFileUpload({ name, label, helperText, typeFile 
         borderRadius="md"
         p={6}
         textAlign="center"
-        cursor="pointer"
+        cursor={disabled ? "not-allowed" : "pointer"}
+        opacity={disabled ? 0.6 : 1}
         transition="all 0.2s"
-        _hover={{ bg: "gray.100" }}
+        _hover={disabled ? undefined : { bg: "gray.100" }}
+        _focusVisible={{ outline: "2px solid", outlineColor: "blue.400", outlineOffset: "2px" }}
       >
-        {/* Input file asli — disembunyikan, di-trigger via label */}
-        <input
-          id={name}
-          type="file"
-          accept={acceptValue}
-          onChange={handleFileChange}
-          style={{ display: "none" }}
-          ref={field.ref}
-        />
+        {/* Input file asli — disembunyikan secara visual, dibuka lewat klik/keyboard Box */}
+        <VisuallyHidden>
+          <input
+            id={name}
+            name={name}
+            type="file"
+            accept={acceptValue}
+            onChange={handleFileChange}
+            disabled={disabled}
+            tabIndex={-1}
+            ref={(el) => {
+              inputRef.current = el;
+              field.ref(el);
+            }}
+          />
+        </VisuallyHidden>
 
         <Text mb={2} color="gray.600">
           {isDragging ? "📁 Lepas file di sini" : "📁 Klik atau drag file ke sini"}
@@ -133,7 +241,7 @@ export default function RHFSingleFileUpload({ name, label, helperText, typeFile 
         </Text>
 
         {/* Tampilkan nama file yang sudah di-upload */}
-        {field.value && (
+        {fileValue && (
           <Box
             mt={3}
             p={3}
@@ -142,14 +250,21 @@ export default function RHFSingleFileUpload({ name, label, helperText, typeFile 
             borderWidth="1px"
             borderColor="gray.200"
           >
-            <Text fontSize="sm" color="gray.700" fontWeight="medium">
-              ✅ {field.value.name}
+            <Text
+              fontSize="sm"
+              color="gray.700"
+              fontWeight="medium"
+              noOfLines={1}
+              title={fileValue.name}
+            >
+              ✅ {fileValue.name}
             </Text>
             <Text fontSize="xs" color="gray.500">
-              {(field.value.size / 1024).toFixed(1)} KB
+              {(fileValue.size / 1024).toFixed(1)} KB
             </Text>
             <Text
               as="span"
+              display="inline-block"
               mt={1}
               fontSize="xs"
               color="red.500"
