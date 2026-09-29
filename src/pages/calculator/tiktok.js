@@ -490,15 +490,15 @@ export default function TikTok() {
                     <DarkMode>
                       <Grid
                         gridGap={10}
-                        templateColumns="max-content 1fr"
+                        templateColumns={{base: '1fr',lg:"max-content 1fr"}}
                         alignItems="center"
                       >
-                        <Box position="relative">
+                        <Box position="relative" w='max-content' h='max-content'>
                           <Box
                             rounded="full"
                             overflow="hidden"
-                            w="25ch"
-                            h="25ch"
+                            w={{base:'10ch',lg:"25ch"}}
+                            h={{base:'10ch',lg:"25ch"}}
                           >
                             {results?.displayPicture ? (
                               <Image
@@ -516,7 +516,8 @@ export default function TikTok() {
                             aria-label="TikTok"
                             position="absolute"
                             bottom="0"
-                            right="5"
+                            right="0"
+                            size={{base:'xs',lg:'md'}}
                           />
                         </Box>
                         <Box>
