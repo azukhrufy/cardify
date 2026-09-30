@@ -1,0 +1,4 @@
+Implemented YouTube calculator following PM guidelines:
+- Added `youtubeERBenchmark` per niche in `src/constants/niches.js`.
+- Implemented `src/pages/calculator/youtube.js` using average views per video logic.
+- Verified build successfully in local environment.
