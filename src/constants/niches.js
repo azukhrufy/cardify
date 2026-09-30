@@ -9,6 +9,8 @@
  * `engagementMultiplier` adalah premi/diskon niche terhadap tarif akhir, dikali
  * setelah engagement multiplier.
  *
+ * `youtubeERBenchmark` adalah standar Engagement Rate YouTube khusus per niche.
+ *
  * ---
  * Dasar angka (riset pasar Indonesia, 2025).
  *
@@ -31,18 +33,8 @@
  *
  * Turunkan angka turunan dari `tiktok.video` niche-nya; jangan diketik manual
  * tanpa membulatkan dengan aturan yang sama.
- *
- * Catatan: model "views × CPM" ini pas untuk TikTok/Instagram, tapi lemah untuk
- * YouTube — tarif YouTube digerakkan jumlah subscriber jauh lebih banyak
- * daripada jumlah views. Angka YouTube di bawah ini konservatif dan modelnya
- * perlu pendekatan sendiri saat halaman YouTube benar-benar dibangun.
  */
 
-/**
- * CPM dasar TikTok per niche (IDR / 1000 views), dan tabel turunannya.
- * Ditulis eksplisit, bukan dihitung saat runtime, supaya angka yang dipakai
- * rate card bisa dibaca dan dikoreksi langsung di sini.
- */
 export const NICHES = [
   {
     id: "beauty",
@@ -59,6 +51,7 @@ export const NICHES = [
       youtube: { integration: 63000, dedicatedVideo: 125000 },
     },
     engagementMultiplier: 1.15,
+    youtubeERBenchmark: 2.3,
   },
   {
     id: "fashion",
@@ -75,6 +68,7 @@ export const NICHES = [
       youtube: { integration: 58000, dedicatedVideo: 115000 },
     },
     engagementMultiplier: 1.05,
+    youtubeERBenchmark: 1.8,
   },
   {
     id: "food",
@@ -91,6 +85,7 @@ export const NICHES = [
       youtube: { integration: 48000, dedicatedVideo: 95000 },
     },
     engagementMultiplier: 1.0,
+    youtubeERBenchmark: 1.6,
   },
   {
     id: "gaming",
@@ -107,6 +102,7 @@ export const NICHES = [
       youtube: { integration: 45000, dedicatedVideo: 90000 },
     },
     engagementMultiplier: 0.95,
+    youtubeERBenchmark: 1.4,
   },
   {
     id: "tech",
@@ -123,6 +119,7 @@ export const NICHES = [
       youtube: { integration: 75000, dedicatedVideo: 150000 },
     },
     engagementMultiplier: 1.2,
+    youtubeERBenchmark: 2.5,
   },
   {
     id: "finance",
@@ -140,6 +137,7 @@ export const NICHES = [
       youtube: { integration: 90000, dedicatedVideo: 180000 },
     },
     engagementMultiplier: 1.35,
+    youtubeERBenchmark: 3.0,
   },
   {
     id: "automotive",
@@ -157,6 +155,7 @@ export const NICHES = [
       youtube: { integration: 68000, dedicatedVideo: 135000 },
     },
     engagementMultiplier: 1.1,
+    youtubeERBenchmark: 2.0,
   },
   {
     id: "outdoor-travel",
@@ -174,6 +173,7 @@ export const NICHES = [
       youtube: { integration: 53000, dedicatedVideo: 105000 },
     },
     engagementMultiplier: 1.05,
+    youtubeERBenchmark: 1.7,
   },
   {
     id: "general",
@@ -191,5 +191,6 @@ export const NICHES = [
       youtube: { integration: 50000, dedicatedVideo: 100000 },
     },
     engagementMultiplier: 1.0,
+    youtubeERBenchmark: 1.5,
   },
 ];
