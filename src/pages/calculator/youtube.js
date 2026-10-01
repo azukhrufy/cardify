@@ -47,10 +47,7 @@ import {
 import { FiDownload } from "react-icons/fi";
 import { YoutubeLogo } from "@/components/CalcHero";
 import { FaUsers } from "react-icons/fa";
-import {
-  loadMonetagScript,
-  loadMonetagPushNotification,
-} from "@/lib/loadMonetag";
+import { showMonetagAd } from "@/lib/loadMonetag";
 
 const formatIDR = (value) =>
   `Rp ${Math.round(Number(value) || 0).toLocaleString("id-ID")}`;
@@ -167,8 +164,8 @@ export default function Youtube() {
 
     // Hanya muat script jika submit dipicu oleh klik tombol
     if (userClickedSubmitRef.current) {
-      loadMonetagScript();
       userClickedSubmitRef.current = false; // reset
+      showMonetagAd(); // no-op kalau masih di dalam jendela throttle 5 menit
     }
   };
 
@@ -200,6 +197,10 @@ export default function Youtube() {
     if (exportLockRef.current) return;
     exportLockRef.current = true;
     setIsExporting(true);
+
+    // Dipanggil setelah lock supaya klik ganda di tick yang sama tidak ikut
+    // memicu iklan; throttle 5 menit tetap berlaku.
+    showMonetagAd();
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -242,10 +243,6 @@ export default function Youtube() {
     value: n.id,
     label: n.label,
   }));
-
-  useEffect(() => {
-    loadMonetagPushNotification();
-  }, []);
 
   return (
     <>
@@ -412,6 +409,7 @@ export default function Youtube() {
 
                   <Box mt={8} mb={8} textAlign="center">
                     <Button
+                       id='calculate-rate-card'
                       type="button" // <-- ubah dari "submit" ke "button"
                       onClick={handleCalculateClick}
                       colorScheme="youtubeRed"
@@ -506,6 +504,7 @@ export default function Youtube() {
                       </Grid>
                     </DarkMode>
                     <Button
+                      id='export-rate-card'
                       leftIcon={<FiDownload />}
                       onClick={handleDownloadPdf}
                       isLoading={isExporting}

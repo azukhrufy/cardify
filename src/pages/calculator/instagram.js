@@ -48,10 +48,7 @@ import {
 import { FiDownload } from "react-icons/fi";
 import { InstagramLogo } from "@/components/CalcHero";
 import { FaUsers } from "react-icons/fa";
-import {
-  loadMonetagScript,
-  loadMonetagPushNotification,
-} from "@/lib/loadMonetag";
+import { showMonetagAd } from "@/lib/loadMonetag";
 
 const formatIDR = (value) =>
   `Rp ${Math.round(Number(value) || 0).toLocaleString("id-ID")}`;
@@ -184,8 +181,8 @@ export default function Instagram() {
 
     // Hanya muat script jika submit dipicu oleh klik tombol
     if (userClickedSubmitRef.current) {
-      loadMonetagScript();
       userClickedSubmitRef.current = false; // reset
+      showMonetagAd(); // no-op kalau masih di dalam jendela throttle 5 menit
     }
   };
 
@@ -225,6 +222,10 @@ export default function Instagram() {
     if (exportLockRef.current) return;
     exportLockRef.current = true;
     setIsExporting(true);
+
+    // Dipanggil setelah lock supaya klik ganda di tick yang sama tidak ikut
+    // memicu iklan; throttle 5 menit tetap berlaku.
+    showMonetagAd();
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -272,10 +273,6 @@ export default function Instagram() {
     value: n.id,
     label: n.label,
   }));
-
-  useEffect(() => {
-    loadMonetagPushNotification();
-  }, []);
 
   // Hint live: perlihatkan pembagian total reach dengan jumlah konten sebelum
   // submit, supaya jelas bahwa metrik di Bagian 2 adalah total periode.
@@ -472,6 +469,7 @@ export default function Instagram() {
 
                   <Box mt={8} mb={8} textAlign="center">
                     <Button
+                      id='calculate-rate-card'
                       type="button" // <-- ubah dari "submit" ke "button"
                       onClick={handleCalculateClick}
                       colorScheme="pink"
@@ -567,6 +565,7 @@ export default function Instagram() {
                       </Grid>
                     </DarkMode>
                     <Button
+                      id='export-rate-card'
                       leftIcon={<FiDownload />}
                       onClick={handleDownloadPdf}
                       isLoading={isExporting}
