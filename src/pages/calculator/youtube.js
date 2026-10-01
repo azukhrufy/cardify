@@ -463,6 +463,8 @@ export default function Youtube() {
                               <Image
                                 src={results?.displayPicture}
                                 alt="Display Picture"
+                                w="full"
+                                h="full"
                                 objectFit="cover"
                               />
                             ) : (

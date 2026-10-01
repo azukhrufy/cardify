@@ -1,4 +1,4 @@
-import { Flex, Button, Box, Container } from "@chakra-ui/react";
+import { Flex, Button, Box, Container, LightMode } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import NextLink from "next/link";
 import { FaTiktok, FaInstagram, FaYoutube } from "react-icons/fa6";
@@ -31,22 +31,29 @@ export default function CalculatorTabLayout({ children }) {
   return (
     <Box bg="white">
       <CalcHero />
-      <Flex w="100%" justifyContent="center" gap={6} py="50px">
-        {TAB_BUTTONS.map((tab) => (
-          <Button
-            as={NextLink}
-            href={tab.href}
-            key={tab.href}
-            colorScheme={tab.colorScheme}
-            variant={router?.pathname === tab.href ? "solid" : "outline"}
-            borderWidth={router?.pathname === tab.href ? "none" : "4px"}
-            rounded="2xl"
-            leftIcon={<tab.icon />}
-          >
-            {tab.title}
-          </Button>
-        ))}
-      </Flex>
+      {/* Tombol tab berdiri di atas band terang, tapi `colorScheme` pada Button
+          diresolusi per color mode: `bg` solid = mode(`*.500`, `*.200`) dan
+          `color` outline = mode(`*.600`, `*.200`). theme.js menyetel
+          initialColorMode "dark", jadi tanpa `<LightMode>` tombol di produksi
+          memakai shade 200/300 yang pucat. */}
+      <LightMode>
+        <Flex w="100%" justifyContent="center" gap={6} py="50px">
+          {TAB_BUTTONS.map((tab) => (
+            <Button
+              as={NextLink}
+              href={tab.href}
+              key={tab.href}
+              colorScheme={tab.colorScheme}
+              variant={router?.pathname === tab.href ? "solid" : "outline"}
+              borderWidth={router?.pathname === tab.href ? "none" : "4px"}
+              rounded="2xl"
+              leftIcon={<tab.icon />}
+            >
+              {tab.title}
+            </Button>
+          ))}
+        </Flex>
+      </LightMode>
       <Container maxW="container.xl">{children}</Container>
     </Box>
   );

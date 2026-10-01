@@ -527,6 +527,8 @@ export default function TikTok() {
                               <Image
                                 src={results?.displayPicture}
                                 alt="Display Picture"
+                                w="full"
+                                h="full"
                                 objectFit="cover"
                               />
                             ) : (

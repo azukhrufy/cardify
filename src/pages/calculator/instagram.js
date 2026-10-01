@@ -523,6 +523,8 @@ export default function Instagram() {
                               <Image
                                 src={results?.displayPicture}
                                 alt="Display Picture"
+                                w="full"
+                                h="full"
                                 objectFit="cover"
                               />
                             ) : (
