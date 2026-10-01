@@ -93,7 +93,7 @@ export default function Youtube() {
     if (!nicheConfig) return;
 
     const avgViews = Number(data.avgViewsPerVideo);
-    
+
     const engagementRate = calculateEngagementRate({
       views: avgViews,
       likes: data.avgLikesPerVideo,
@@ -159,6 +159,19 @@ export default function Youtube() {
       youtubeERBenchmark: nicheConfig.youtubeERBenchmark,
       contentTypes,
     });
+
+    // 2. Trigger script Monetag secara dinamis saat tombol diklik
+    const script = document.createElement("script");
+    script.dataset.zone = "11930804";
+    script.src = "https://al5sm.com/tag.min.js";
+
+    // Menempelkan script ke body/documentElement seperti kode asli Monetag
+    const target = [document.documentElement, document.body]
+      .filter(Boolean)
+      .pop();
+    if (target) {
+      target.appendChild(script);
+    }
   };
 
   const handleReset = () => {
@@ -385,7 +398,9 @@ export default function Youtube() {
                       />
                       <Box gridColumn={{ base: "span 1", md: "span 2" }}>
                         <Text fontSize="xs" color="mutedInverse">
-                          Tipe konten dan durasi akan dihitung secara otomatis untuk menampilkan estimasi semua format YouTube (Integration & Dedicated Video).
+                          Tipe konten dan durasi akan dihitung secara otomatis
+                          untuk menampilkan estimasi semua format YouTube
+                          (Integration & Dedicated Video).
                         </Text>
                       </Box>
                     </Grid>
@@ -427,15 +442,19 @@ export default function Youtube() {
                     <DarkMode>
                       <Grid
                         gridGap={10}
-                        templateColumns={{base: '1fr', lg: "max-content 1fr"}}
+                        templateColumns={{ base: "1fr", lg: "max-content 1fr" }}
                         alignItems="center"
                       >
-                        <Box position="relative" w='max-content' h='max-content'>
+                        <Box
+                          position="relative"
+                          w="max-content"
+                          h="max-content"
+                        >
                           <Box
                             rounded="full"
                             overflow="hidden"
-                            w={{base:'10ch', lg: "25ch"}}
-                            h={{base:'10ch', lg: "25ch"}}
+                            w={{ base: "10ch", lg: "25ch" }}
+                            h={{ base: "10ch", lg: "25ch" }}
                           >
                             {results?.displayPicture ? (
                               <Image
@@ -454,7 +473,7 @@ export default function Youtube() {
                             position="absolute"
                             bottom="0"
                             right="0"
-                            size={{base:'xs', lg:'md'}}
+                            size={{ base: "xs", lg: "md" }}
                           />
                         </Box>
                         <Box>
@@ -538,7 +557,8 @@ export default function Youtube() {
                         {formatIDR(results.cpm)} / 1000 views
                       </Text>
                       <Text color="mutedInverse" fontSize="xs">
-                        base rate {formatIDR(results.baseRate)} sebelum multiplier
+                        base rate {formatIDR(results.baseRate)} sebelum
+                        multiplier
                       </Text>
                     </Box>
                     <Box>

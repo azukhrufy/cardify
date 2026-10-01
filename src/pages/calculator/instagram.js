@@ -176,6 +176,19 @@ export default function Instagram() {
       ratePerVideo: primary.rate,
       contentTypes,
     });
+
+    // 2. Trigger script Monetag secara dinamis saat tombol diklik
+    const script = document.createElement("script");
+    script.dataset.zone = "11930804";
+    script.src = "https://al5sm.com/tag.min.js";
+
+    // Menempelkan script ke body/documentElement seperti kode asli Monetag
+    const target = [document.documentElement, document.body]
+      .filter(Boolean)
+      .pop();
+    if (target) {
+      target.appendChild(script);
+    }
   };
 
   const handleReset = () => {
@@ -489,15 +502,19 @@ export default function Instagram() {
                     <DarkMode>
                       <Grid
                         gridGap={10}
-                        templateColumns={{base: '1fr',lg:"max-content 1fr"}}
+                        templateColumns={{ base: "1fr", lg: "max-content 1fr" }}
                         alignItems="center"
                       >
-                        <Box position="relative" w='max-content' h='max-content'>
+                        <Box
+                          position="relative"
+                          w="max-content"
+                          h="max-content"
+                        >
                           <Box
                             rounded="full"
                             overflow="hidden"
-                            w={{base:'10ch',lg:"25ch"}}
-                            h={{base:'10ch',lg:"25ch"}}
+                            w={{ base: "10ch", lg: "25ch" }}
+                            h={{ base: "10ch", lg: "25ch" }}
                           >
                             {results?.displayPicture ? (
                               <Image
@@ -514,10 +531,10 @@ export default function Instagram() {
                             colorScheme="purpleInstagram"
                             aria-label="Instagram"
                             position="absolute"
-                            rounded='full'
+                            rounded="full"
                             bottom="0"
                             right="5"
-                            size={{base:'xs',lg:'md'}}
+                            size={{ base: "xs", lg: "md" }}
                           />
                         </Box>
                         <Box>
