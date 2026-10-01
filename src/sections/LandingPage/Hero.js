@@ -148,9 +148,9 @@ export default function Hero() {
             <Button as="a" href="/calculator" variant="primary">
               Hitung Rate Card Saya
             </Button>
-            <Button as="a" href="/how-it-works" variant="secondary">
+            {/* <Button as="a" href="/how-it-works" variant="secondary">
               Lihat Cara Kerjanya
-            </Button>
+            </Button> */}
           </HStack>
 
           <Text fontSize="sm" color="faint" mt={4}>
