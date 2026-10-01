@@ -33,6 +33,13 @@
 >    iklan yang di-inject runtime dari host berotasi. Masalah #1 dan #2 di atas
 >    selesai dulu sebelum CSP ketat bisa dipertimbangkan.
 >
+> 4. **Tag skrip (`11931554`, `https://nap5k.com/tag.min.js`) diganti direct
+>    link.** `loadMonetagTag()` sudah dibuang; yang tersisa di
+>    [src/lib/loadMonetag.js](../lib/loadMonetag.js) cuma throttle + pembukaan
+>    `https://omg10.com/4/11933547` lewat `window.open` dari handler klik.
+>    Tidak ada skrip Monetag yang berjalan di origin ini lagi, jadi seluruh
+>    bagian di bawah yang membahas injeksi `<script>` sudah tidak berlaku.
+>
 > Kalau zona push mau dihidupkan lagi: pindahkan ke subdomain sendiri, jangan
 > pernah taruh service worker pihak ketiga di root origin ini.
 

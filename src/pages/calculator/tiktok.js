@@ -50,6 +50,7 @@ import { FiDownload } from "react-icons/fi";
 import { TikTokLogo } from "@/components/CalcHero";
 import { FaUsers } from "react-icons/fa";
 import { showMonetagAd } from "@/lib/loadMonetag";
+import AdsterraBanner from "@/components/AdsterraBanner";
 
 const formatIDR = (value) =>
   `Rp ${Math.round(Number(value) || 0).toLocaleString("id-ID")}`;
@@ -183,7 +184,8 @@ export default function TikTok() {
       contentTypes,
     });
 
-    // Hanya muat script jika submit dipicu oleh klik tombol
+    // Iklan hanya dibuka kalau submit dipicu oleh klik tombol: `window.open`
+    // butuh user gesture, submit programatik cuma akan diblokir popup blocker.
     if (userClickedSubmitRef.current) {
       userClickedSubmitRef.current = false; // reset
       showMonetagAd(); // no-op kalau masih di dalam jendela throttle 5 menit
@@ -824,6 +826,12 @@ export default function TikTok() {
                   </Box>
                 </Box>
               )}
+
+              {/* Banner Adsterra di bawah form / blok hasil. Gerbang syarat
+                  penggunaan dan lebar per breakpoint diurus komponennya. */}
+              <Box mt={10}>
+                <AdsterraBanner />
+              </Box>
             </Container>
             {results && (
               <Box mt={6} textAlign="center">
