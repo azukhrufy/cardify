@@ -1,5 +1,39 @@
 import { Box, Flex, Grid, Link, Text, VStack } from "@chakra-ui/react";
+import NextLink from "next/link";
 import Wordmark from "../../components/Wordmark";
+import { COMPANY } from "@/constants/company";
+
+/**
+ * "Cara Kerja" menunjuk ke section di halaman depan, jadi href-nya harus
+ * absolut (`/#how-it-works`). Dengan `#how-it-works` saja, link-nya mati begitu
+ * footer ini dirender di halaman selain `/` — dan footer ada di semua halaman.
+ */
+const LINK_GROUPS = [
+  {
+    title: "Bantuan",
+    links: [
+      { href: "/#how-it-works", label: "Cara Kerja" },
+      { href: "/faq", label: "FAQ" },
+      { href: "/contact", label: "Kontak" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { href: "/terms", label: "Syarat & Ketentuan" },
+      { href: "/refund", label: "Kebijakan Refund" },
+      { href: "/privacy", label: "Kebijakan Privasi" },
+    ],
+  },
+];
+
+const LINK_PROPS = {
+  as: NextLink,
+  fontSize: "sm",
+  color: "muted",
+  transition: "color 150ms",
+  _hover: { color: "fg" },
+};
 
 export default function Footer() {
   return (
@@ -12,7 +46,10 @@ export default function Footer() {
       scrollMarginTop="4rem"
     >
       <Box maxW="7xl" mx="auto" px={6}>
-        <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={12}>
+        <Grid
+          templateColumns={{ base: "1fr", md: "2fr 1fr 1fr" }}
+          gap={{ base: 10, md: 12 }}
+        >
           <Box maxW="sm">
             <Wordmark />
             <Text fontSize="sm" color="muted" mt={3}>
@@ -24,17 +61,18 @@ export default function Footer() {
             </Text>
           </Box>
 
-          <VStack align={{ base: "flex-start", md: "flex-end" }} spacing={3}>
-            <Link
-              href="#how-it-works"
-              fontSize="sm"
-              color="muted"
-              transition="color 150ms"
-              _hover={{ color: "fg" }}
-            >
-              Cara Kerja
-            </Link>
-          </VStack>
+          {LINK_GROUPS.map((group) => (
+            <VStack key={group.title} align="flex-start" spacing={3}>
+              <Text fontSize="sm" fontWeight="semibold" color="fg">
+                {group.title}
+              </Text>
+              {group.links.map((link) => (
+                <Link key={link.href} href={link.href} {...LINK_PROPS}>
+                  {link.label}
+                </Link>
+              ))}
+            </VStack>
+          ))}
         </Grid>
 
         <Flex
@@ -48,9 +86,9 @@ export default function Footer() {
           justifyContent="space-between"
           gap={2}
         >
-          <Text>© 2026 Cardify</Text>
+          <Text>© 2026 {COMPANY.name}</Text>
           <Link
-            href="https://cardify.my.id"
+            href={COMPANY.siteUrl}
             color="faint"
             transition="color 150ms"
             _hover={{ color: "muted" }}

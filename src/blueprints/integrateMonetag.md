@@ -1,5 +1,41 @@
 # Blueprint: Monetag Ads on Calculator Pages
 
+> **Status 2026-10-01 — sebagian sudah tidak berlaku.** Audit keamanan mengubah
+> tiga hal di bawah ini; sisa dokumen belum ditulis ulang dan masih memuat
+> keadaan sebelum perubahan. Perlakukan bagian di bawah catatan ini sebagai
+> riwayat desain, bukan deskripsi kode saat ini.
+>
+> 1. **Zona push (`11930912`) dilepas.** Zona itu satu-satunya yang membutuhkan
+>    `public/sw.js` — service worker ber-scope `/` yang isinya
+>    `importScripts()` dari `5gvci.com` dan `3nbf4.com`. Skrip dari domain
+>    jaringan iklan yang jalan sebagai worker berarti siapa pun yang menguasai
+>    domain itu memegang kendali penuh atas origin ini, termasuk menulis ulang
+>    respons untuk URL apa pun. `public/sw.js` sudah dihapus dan
+>    `loadMonetagPushNotification()` sudah dibuang dari
+>    [src/lib/loadMonetag.js](../lib/loadMonetag.js).
+> 2. **Ada gerbang syarat penggunaan.** [src/lib/adTerms.js](../lib/adTerms.js)
+>    mencatat kapan user menerima syarat versi gratis (`ads:acceptedAt` di
+>    `localStorage`); `showMonetagAd()` menolak jalan tanpa itu. Banner-nya di
+>    [src/components/AdTermsBanner.js](../components/AdTermsBanner.js),
+>    penjelasannya di [src/pages/privacy.js](../pages/privacy.js).
+>
+>    Ini **bukan** persetujuan (consent): tidak ada tombol tolak, karena versi
+>    gratis memang dibiayai iklan. Kalkulatornya tidak diblokir — sebelum
+>    tombolnya ditekan semuanya berfungsi, hanya iklannya yang tidak dimuat.
+>    Karena tidak ada pilihan bebas, jangan sebut ini "consent" di dokumen
+>    mana pun; klaim persetujuan atas sesuatu yang tidak bisa ditolak justru
+>    sumber masalahnya. Kalau nanti versi berbayar tanpa iklan benar-benar
+>    ada, baru gate-nya punya alternatif yang sah.
+> 3. **Ada security header.** [next.config.mjs](../../next.config.mjs) mengirim
+>    CSP (`frame-ancestors`/`object-src`/`base-uri`), X-Frame-Options,
+>    nosniff, Referrer-Policy, Permissions-Policy, dan HSTS. Belum ada
+>    `script-src` / `connect-src` — allowlist yang ketat akan mematahkan skrip
+>    iklan yang di-inject runtime dari host berotasi. Masalah #1 dan #2 di atas
+>    selesai dulu sebelum CSP ketat bisa dipertimbangkan.
+>
+> Kalau zona push mau dihidupkan lagi: pindahkan ke subdomain sendiri, jangan
+> pernah taruh service worker pihak ketiga di root origin ini.
+
 ## Goal
 
 Show Monetag ads on the calculator pages, triggered only by user interaction with

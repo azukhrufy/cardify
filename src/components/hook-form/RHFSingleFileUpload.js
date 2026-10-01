@@ -11,6 +11,13 @@ import {
 import { useRef, useState } from "react";
 
 // Mapping tipe file — dijaga di sini agar konsisten di seluruh form
+//
+// `image/svg+xml` sengaja TIDAK ada di daftar. SVG satu-satunya format gambar
+// yang bisa membawa <script> dan referensi resource eksternal di dalamnya.
+// Hari ini nilainya cuma dipakai sebagai `src` <img> (skrip di dalam SVG tidak
+// dieksekusi di konteks itu) dan di-capture html2canvas dengan `useCORS: true`
+// (yang akan mencoba mengambil referensi eksternal apa pun yang dideklarasikan
+// file-nya). Jangan tambahkan kembali tanpa menutup dua jalur itu lebih dulu.
 const FILE_TYPE_ACCEPT = {
   // Gambar
   image: [
@@ -18,7 +25,6 @@ const FILE_TYPE_ACCEPT = {
     "image/png",
     "image/gif",
     "image/webp",
-    "image/svg+xml",
     "image/x-icon",
   ],
   // Dokumen
@@ -41,7 +47,6 @@ const MIME_EXTENSIONS = {
   "image/png": [".png"],
   "image/gif": [".gif"],
   "image/webp": [".webp"],
-  "image/svg+xml": [".svg"],
   "image/x-icon": [".ico"],
   "application/pdf": [".pdf"],
   "application/msword": [".doc"],

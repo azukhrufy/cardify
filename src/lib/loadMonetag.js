@@ -1,5 +1,7 @@
 // lib/loadMonetag.js
 
+import { hasAcceptedAdTerms } from "./adTerms";
+
 // Throttle global: maksimal satu iklan per 5 menit, berlaku untuk semua zona
 // dan semua halaman kalkulator. Disimpan di `sessionStorage` (bukan
 // `localStorage`) supaya jendelanya reset di tab / sesi browser baru.
@@ -10,8 +12,12 @@ const THROTTLE_MS = 5 * 60 * 1000;
 const MONETAG_TAG_SRC = "https://nap5k.com/tag.min.js";
 const MONETAG_TAG_ZONE = "11931554";
 
-const MONETAG_PUSH_SRC = "https://5gvci.com/act/files/tag.min.js?z=11930912";
-const MONETAG_PUSH_ZONE = "11930912";
+// Zona push (`11930912`, `https://5gvci.com/act/files/tag.min.js`) sudah
+// dilepas. Zona itu satu-satunya yang membutuhkan `public/sw.js` — service
+// worker ber-scope "/" yang isinya `importScripts()` dari domain jaringan
+// iklan, sehingga siapa pun yang menguasai domain itu memegang kendali penuh
+// atas origin ini. Lihat catatan audit di
+// `src/blueprints/integrateMonetag.md` sebelum menyalakannya lagi.
 
 // `sessionStorage` bisa melempar di private mode / iframe sandbox. Gagal baca
 // = anggap "belum pernah tampil"; gagal tulis = jendela throttle tidak
@@ -41,7 +47,7 @@ export function shouldShowMonetagAd() {
 // `dataset.zone` wajib diset sebelum `src`: begitu src di-assign, request bisa
 // langsung jalan. Dedupe lewat zona atau src supaya klik berulang tidak
 // menumpuk <script> di DOM.
-function appendScript({ zone, src, attrs = {} }) {
+function appendScript({ zone, src }) {
   if (
     document.querySelector(`script[data-zone="${zone}"]`) ||
     document.querySelector(`script[src="${src}"]`)
@@ -53,9 +59,6 @@ function appendScript({ zone, src, attrs = {} }) {
   script.dataset.zone = zone;
   script.src = src;
   script.async = true;
-  for (const [name, value] of Object.entries(attrs)) {
-    script.setAttribute(name, value);
-  }
 
   document.body.appendChild(script);
 }
@@ -65,27 +68,24 @@ export function loadMonetagTag() {
   appendScript({ zone: MONETAG_TAG_ZONE, src: MONETAG_TAG_SRC });
 }
 
-export function loadMonetagPushNotification() {
-  if (typeof window === "undefined") return;
-  appendScript({
-    zone: MONETAG_PUSH_ZONE,
-    src: MONETAG_PUSH_SRC,
-    attrs: { "data-cfasync": "false" }, // sesuai atribut di snippet asli
-  });
-}
-
 /**
- * Satu-satunya entry point yang dipanggil dari handler klik: cek throttle,
- * muat semua zona, lalu catat waktunya kalau iklan benar-benar dimuat.
+ * Satu-satunya entry point yang dipanggil dari handler klik: cek syarat
+ * penggunaan, cek throttle, muat tag, lalu catat waktunya kalau iklan
+ * benar-benar dimuat.
  *
- * @returns {boolean} `true` kalau iklan ditampilkan, `false` kalau di-throttle.
+ * Urutan ceknya penting. Syaratnya diperiksa lebih dulu supaya user yang belum
+ * menerima tidak pernah memuat skrip pihak ketiga sama sekali — dan supaya
+ * penundaan itu tidak ikut memajukan jendela throttle.
+ *
+ * @returns {boolean} `true` kalau iklan dimuat, `false` kalau belum diterima
+ *   atau di-throttle.
  */
 export function showMonetagAd() {
   if (typeof window === "undefined") return false;
+  if (!hasAcceptedAdTerms()) return false;
   if (!shouldShowMonetagAd()) return false;
 
   loadMonetagTag();
-  loadMonetagPushNotification();
   writeLastShownAt(Date.now());
 
   return true;
