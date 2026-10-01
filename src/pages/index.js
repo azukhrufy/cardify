@@ -13,6 +13,9 @@ export default function Home() {
   return (
     <>
       <Head>
+        {/* Google AdSense */}
+        <meta name="google-adsense-account" content="ca-pub-3860177951049068" />
+
         {/* Primary Meta Tags */}
         <title>Cardify — AI Social Media Rate Card Generator</title>
         <meta
