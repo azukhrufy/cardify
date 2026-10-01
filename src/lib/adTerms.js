@@ -1,7 +1,8 @@
 // lib/adTerms.js
 //
-// Syarat penggunaan versi gratis: Cardify dibiayai iklan, dan iklannya dimuat
-// lewat skrip pihak ketiga Monetag.
+// Syarat penggunaan versi gratis: Cardify dibiayai iklan dari jaringan pihak
+// ketiga — banner Adsterra di halaman kalkulator, dan tautan langsung Monetag
+// yang dibuka di tab baru saat tombol hitung / unduh PDF ditekan.
 //
 // Ini BUKAN persetujuan dalam arti GDPR / UU 27/2022. Tidak ada opsi menolak
 // sambil tetap memakai situs, jadi tidak ada pilihan bebas yang bisa
@@ -10,11 +11,12 @@
 // persetujuan atas sesuatu yang tidak bisa ditolak justru sumber masalahnya,
 // bukan bannernya.
 //
-// Konsekuensi teknisnya tetap sama seperti sebelumnya: skrip Monetag berjalan
+// Konsekuensi teknisnya tetap sama untuk bannernya: skrip Adsterra berjalan
 // same-origin di halaman ini dan secara teknis bisa membaca seluruh isi DOM —
 // termasuk nama, handle, metrik, dan foto profil yang di-upload di halaman
 // kalkulator. Karena itu skripnya tidak dimuat sebelum user menekan tombol di
-// bannernya.
+// bannernya. Iklan Monetag sekarang cuma tautan keluar, tidak ada skripnya yang
+// berjalan di sini.
 //
 // Disimpan di `localStorage` supaya catatannya bertahan antar tab dan antar
 // sesi — kalau tidak, bannernya muncul terus di setiap kunjungan.

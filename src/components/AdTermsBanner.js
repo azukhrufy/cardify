@@ -70,10 +70,13 @@ export default function AdTermsBanner() {
         >
           <Text fontSize="sm" color="fgInverse">
             Cardify gratis dan dibiayai iklan dari jaringan pihak ketiga
-            Monetag. Skripnya berjalan di halaman ini dan secara teknis bisa
-            membaca isi halaman — termasuk data yang kamu masukkan di kalkulator
-            dan foto profil yang kamu unggah. Selama kamu memakai versi gratis,
-            iklannya ikut dimuat; versi berbayar tanpa iklan sedang disiapkan.{" "}
+            Monetag dan Adsterra. Skrip Adsterra berjalan di halaman ini dan
+            secara teknis bisa membaca isi halaman — termasuk data yang kamu
+            masukkan di kalkulator dan foto profil yang kamu unggah. Iklan
+            Monetag tidak memakai skrip di sini: tautannya terbuka di tab baru
+            saat kamu menekan tombol hitung atau unduh PDF. Selama kamu memakai
+            versi gratis, iklannya ikut dimuat; versi berbayar tanpa iklan
+            sedang disiapkan.{" "}
             <Link as={NextLink} href="/privacy" textDecoration="underline">
               Selengkapnya
             </Link>

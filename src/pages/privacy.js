@@ -36,28 +36,48 @@ export default function Privacy() {
           ketiga{" "}
           <Link href="https://monetag.com/" isExternal textDecoration="underline">
             Monetag
+          </Link>{" "}
+          dan{" "}
+          <Link
+            href="https://adsterra.com/"
+            isExternal
+            textDecoration="underline"
+          >
+            Adsterra
           </Link>
-          . Selama kamu memakai versi gratis, skrip Monetag ikut dimuat ke halaman
-          ini. Versi berbayar tanpa iklan sedang disiapkan.
+          . Versi berbayar tanpa iklan sedang disiapkan.
         </Text>
         <Text lineHeight="tall">
-          Karena skrip itu berjalan di halaman yang sama, secara teknis ia bisa
-          membaca apa pun yang ada di halaman — termasuk data kalkulator dan foto
-          profil yang kamu unggah. Kami tidak mengirimkan data itu ke Monetag,
-          tapi kami juga tidak bisa membatasi apa yang skrip mereka baca. Data
-          yang mereka proses diatur oleh kebijakan privasi Monetag, bukan
-          kebijakan ini.
+          <b>Adsterra</b> menayangkan banner di halaman kalkulator. Skripnya
+          berjalan di halaman yang sama, jadi secara teknis ia bisa membaca apa
+          pun yang ada di halaman — termasuk data kalkulator dan foto profil
+          yang kamu unggah. Kami tidak mengirimkan data itu ke Adsterra, tapi
+          kami juga tidak bisa membatasi apa yang skrip mereka baca. Data yang
+          mereka proses diatur oleh kebijakan privasi Adsterra, bukan kebijakan
+          ini.
         </Text>
         <Text lineHeight="tall">
-          Skripnya baru dimuat setelah kamu menekan <b>Setuju &amp; Lanjutkan</b>{" "}
-          di banner. Sebelum itu kalkulatornya tetap berfungsi penuh — yang
-          tertunda cuma pemuatan iklannya, bukan fiturnya.
+          <b>Monetag</b> tidak memuat skrip apa pun di halaman ini. Iklannya
+          berupa tautan langsung yang dibuka di tab baru saat kamu menekan
+          tombol hitung atau unduh PDF, jadi halaman ini beserta isinya tidak
+          ikut terbaca olehnya. Tab iklannya dibuka maksimal sekali per lima
+          menit, dan tetap di belakang supaya kamu tidak kehilangan hasil
+          perhitungan atau unduhan PDF yang sedang jalan.
+        </Text>
+        <Text lineHeight="tall">
+          Skrip Adsterra baru dimuat setelah kamu menekan{" "}
+          <b>Setuju &amp; Lanjutkan</b> di banner. Sebelum itu kalkulatornya
+          tetap berfungsi penuh — yang tertunda cuma pemuatan iklannya, bukan
+          fiturnya.
         </Text>
       </LegalSection>
 
       <LegalSection title="Yang tersimpan di browser kamu">
         <Text lineHeight="tall">
-          Kami tidak memasang cookie. Dua nilai berikut disimpan atas nama kami:
+          Kami tidak memasang cookie. Jaringan iklannya sendiri bisa menaruh
+          cookie atau penyimpanan milik mereka setelah skripnya dimuat — itu di
+          luar kendali kami dan diatur kebijakan privasi masing-masing jaringan.
+          Dua nilai berikut disimpan atas nama kami:
         </Text>
         <LegalList>
           <li>
