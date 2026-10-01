@@ -23,6 +23,7 @@ export default function Home() {
           name="description"
           content="Buat rate card profesional untuk sosial media kamu secara otomatis dengan AI."
         />
+        <meta name="adsterra-verification" content="03joU4" />
 
         {/* Open Graph / Facebook / WhatsApp / LinkedIn */}
         <meta property="og:type" content="website" />
