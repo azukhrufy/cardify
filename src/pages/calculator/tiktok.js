@@ -830,7 +830,7 @@ export default function TikTok() {
               {/* Banner Adsterra di bawah form / blok hasil. Gerbang syarat
                   penggunaan dan lebar per breakpoint diurus komponennya. */}
               <Box mt={10}>
-                <AdsterraBanner />
+                {/* <AdsterraBanner /> */}
               </Box>
             </Container>
             {results && (
