@@ -1,5 +1,4 @@
 import { useForm, useWatch } from "react-hook-form";
-import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Box,
@@ -50,6 +49,10 @@ import {
 import { FiDownload } from "react-icons/fi";
 import { TikTokLogo } from "@/components/CalcHero";
 import { FaUsers } from "react-icons/fa";
+import {
+  loadMonetagScript,
+  loadMonetagPushNotification,
+} from "@/lib/loadMonetag";
 
 const formatIDR = (value) =>
   `Rp ${Math.round(Number(value) || 0).toLocaleString("id-ID")}`;
@@ -79,6 +82,7 @@ TikTok.getLayout = function getLayout(page) {
 
 export default function TikTok() {
   const [results, setResults] = useState(null);
+  const userClickedSubmitRef = useRef(false);
   const methods = useForm({
     defaultValues: {
       fullName: "",
@@ -182,16 +186,16 @@ export default function TikTok() {
       contentTypes,
     });
 
-    // 2. Trigger script Monetag secara dinamis saat tombol diklik
-    const script = document.createElement('script');
-    script.dataset.zone = '11930804';
-    script.src = 'https://al5sm.com/tag.min.js';
-    
-    // Menempelkan script ke body/documentElement seperti kode asli Monetag
-    const target = [document.documentElement, document.body].filter(Boolean).pop();
-    if (target) {
-      target.appendChild(script);
+    // Hanya muat script jika submit dipicu oleh klik tombol
+    if (userClickedSubmitRef.current) {
+      loadMonetagScript();
+      userClickedSubmitRef.current = false; // reset
     }
+  };
+
+  const handleCalculateClick = () => {
+    userClickedSubmitRef.current = true;
+    methods.handleSubmit(onSubmit)();
   };
 
   const handleReset = () => {
@@ -294,13 +298,14 @@ export default function TikTok() {
         )} views/konten. Tarif dihitung dari angka per konten ini.`
       : "Jumlah konten yang di-post dalam periode yang sama. Total views di Bagian 2 akan dibagi angka ini.";
 
+  useEffect(() => {
+    loadMonetagPushNotification();
+  }, []);
+
   return (
     <>
       <PageMeta title="Tiktok Calculator" />
-      <RHFFormProvider
-        methods={methods}
-        onSubmit={methods.handleSubmit(onSubmit)}
-      >
+      <RHFFormProvider methods={methods}>
         {/* Halaman ini memakai band terang, jadi semua token di sini adalah varian
           `*Inverse` — `fg`, `surface`, `border`, dan `bg` polos adalah varian
           band gelap.
@@ -471,7 +476,8 @@ export default function TikTok() {
 
                   <Box mt={8} mb={8} textAlign="center">
                     <Button
-                      type="submit"
+                      type="button" // <-- ubah dari "submit" ke "button"
+                      onClick={handleCalculateClick}
                       colorScheme="pink"
                       size="lg"
                       px={10}

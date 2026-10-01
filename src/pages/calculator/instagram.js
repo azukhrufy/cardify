@@ -48,6 +48,10 @@ import {
 import { FiDownload } from "react-icons/fi";
 import { InstagramLogo } from "@/components/CalcHero";
 import { FaUsers } from "react-icons/fa";
+import {
+  loadMonetagScript,
+  loadMonetagPushNotification,
+} from "@/lib/loadMonetag";
 
 const formatIDR = (value) =>
   `Rp ${Math.round(Number(value) || 0).toLocaleString("id-ID")}`;
@@ -77,6 +81,7 @@ Instagram.getLayout = function getLayout(page) {
 
 export default function Instagram() {
   const [results, setResults] = useState(null);
+  const userClickedSubmitRef = useRef(false);
   const methods = useForm({
     defaultValues: {
       fullName: "",
@@ -177,18 +182,16 @@ export default function Instagram() {
       contentTypes,
     });
 
-    // 2. Trigger script Monetag secara dinamis saat tombol diklik
-    const script = document.createElement("script");
-    script.dataset.zone = "11930804";
-    script.src = "https://al5sm.com/tag.min.js";
-
-    // Menempelkan script ke body/documentElement seperti kode asli Monetag
-    const target = [document.documentElement, document.body]
-      .filter(Boolean)
-      .pop();
-    if (target) {
-      target.appendChild(script);
+    // Hanya muat script jika submit dipicu oleh klik tombol
+    if (userClickedSubmitRef.current) {
+      loadMonetagScript();
+      userClickedSubmitRef.current = false; // reset
     }
+  };
+
+  const handleCalculateClick = () => {
+    userClickedSubmitRef.current = true;
+    methods.handleSubmit(onSubmit)();
   };
 
   const handleReset = () => {
@@ -270,6 +273,10 @@ export default function Instagram() {
     label: n.label,
   }));
 
+  useEffect(() => {
+    loadMonetagPushNotification();
+  }, []);
+
   // Hint live: perlihatkan pembagian total reach dengan jumlah konten sebelum
   // submit, supaya jelas bahwa metrik di Bagian 2 adalah total periode.
   // `useWatch`, bukan `methods.watch()` — yang kedua tidak kompatibel dengan
@@ -294,10 +301,7 @@ export default function Instagram() {
   return (
     <>
       <PageMeta title="Instagram Calculator" />
-      <RHFFormProvider
-        methods={methods}
-        onSubmit={methods.handleSubmit(onSubmit)}
-      >
+      <RHFFormProvider methods={methods}>
         {/* Halaman ini memakai band terang, jadi semua token di sini adalah varian
           `*Inverse` — `fg`, `surface`, `border`, dan `bg` polos adalah varian
           band gelap.
@@ -468,7 +472,8 @@ export default function Instagram() {
 
                   <Box mt={8} mb={8} textAlign="center">
                     <Button
-                      type="submit"
+                      type="button" // <-- ubah dari "submit" ke "button"
+                      onClick={handleCalculateClick}
                       colorScheme="pink"
                       size="lg"
                       px={10}

@@ -1,4 +1,4 @@
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Box,
@@ -47,6 +47,10 @@ import {
 import { FiDownload } from "react-icons/fi";
 import { YoutubeLogo } from "@/components/CalcHero";
 import { FaUsers } from "react-icons/fa";
+import {
+  loadMonetagScript,
+  loadMonetagPushNotification,
+} from "@/lib/loadMonetag";
 
 const formatIDR = (value) =>
   `Rp ${Math.round(Number(value) || 0).toLocaleString("id-ID")}`;
@@ -71,6 +75,7 @@ Youtube.getLayout = function getLayout(page) {
 
 export default function Youtube() {
   const [results, setResults] = useState(null);
+  const userClickedSubmitRef = useRef(false);
   const methods = useForm({
     defaultValues: {
       fullName: "",
@@ -160,18 +165,16 @@ export default function Youtube() {
       contentTypes,
     });
 
-    // 2. Trigger script Monetag secara dinamis saat tombol diklik
-    const script = document.createElement("script");
-    script.dataset.zone = "11930804";
-    script.src = "https://al5sm.com/tag.min.js";
-
-    // Menempelkan script ke body/documentElement seperti kode asli Monetag
-    const target = [document.documentElement, document.body]
-      .filter(Boolean)
-      .pop();
-    if (target) {
-      target.appendChild(script);
+    // Hanya muat script jika submit dipicu oleh klik tombol
+    if (userClickedSubmitRef.current) {
+      loadMonetagScript();
+      userClickedSubmitRef.current = false; // reset
     }
+  };
+
+  const handleCalculateClick = () => {
+    userClickedSubmitRef.current = true;
+    methods.handleSubmit(onSubmit)();
   };
 
   const handleReset = () => {
@@ -240,13 +243,14 @@ export default function Youtube() {
     label: n.label,
   }));
 
+  useEffect(() => {
+    loadMonetagPushNotification();
+  }, []);
+
   return (
     <>
       <PageMeta title="Youtube Calculator" />
-      <RHFFormProvider
-        methods={methods}
-        onSubmit={methods.handleSubmit(onSubmit)}
-      >
+      <RHFFormProvider methods={methods}>
         <LightMode>
           <Box bg="bgInverse" color="fgInverse" minH="100vh" py={12}>
             <Container maxW="container.xl">
@@ -408,7 +412,8 @@ export default function Youtube() {
 
                   <Box mt={8} mb={8} textAlign="center">
                     <Button
-                      type="submit"
+                      type="button" // <-- ubah dari "submit" ke "button"
+                      onClick={handleCalculateClick}
                       colorScheme="youtubeRed"
                       size="lg"
                       px={10}
@@ -486,14 +491,14 @@ export default function Youtube() {
                             {results.fullName}
                           </Text>
                           <Text
-                            color="muted"
+                            color="bgInverse"
                             as="h1"
                             fontSize="2xl"
                             fontWeight="bold"
                           >
                             {results.username}
                           </Text>
-                          <Button leftIcon={<FaUsers />} mt={2}>
+                          <Button leftIcon={<FaUsers />} mt={2} px={0}>
                             {results?.totalSubscribers.toLocaleString("id-ID")}{" "}
                             Subscribers
                           </Button>
@@ -659,7 +664,7 @@ export default function Youtube() {
                       target="_blank"
                       rel="noopener noreferrer"
                       size="lg"
-                      colorScheme="youtubeRed"
+                      colorScheme="tiktokBlack"
                     >
                       <Box>
                         <Text fontSize="sm">Made with </Text>
