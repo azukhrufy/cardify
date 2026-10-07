@@ -14,6 +14,6 @@ Calculator.getLayout = function getLayout(page) {
 export default function Calculator() {
   const router = useRouter();
   useEffect(() => {
-    router.push("/calculator/tiktok");
-  }, []);
+    router.replace("/calculator/tiktok");
+  }, [router]);
 }
