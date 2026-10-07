@@ -33,6 +33,12 @@ export const COMPANY = {
     "Jl IR H Juanda 495B, Kec. Coblong, Kota Bandung, Jawa Barat, Indonesia",
 
   siteUrl: "https://cardify.my.id",
+
+  socials: {
+    tiktok: "https://www.tiktok.com/@cardify.my.id",
+    instagram: "https://www.instagram.com/cardify.my.id",
+    threads: "https://www.threads.net/@cardify.my.id",
+  },
 };
 
 /** Nama yang muncul di dokumen legal: badan hukum kalau ada, nama situs kalau belum. */
