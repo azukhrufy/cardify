@@ -20,6 +20,12 @@ import {
 } from "@/lib/server/oauth/crypto";
 
 function getBaseUrl(req) {
+  // Prioritas 1: URL kanonik eksplisit. Redirect URI wajib SAMA PERSIS antara
+  // saat authorize dan saat menukar code; kalau di belakang proxy/CDN nilai
+  // turunan dari header bisa berubah dan penukaran token gagal.
+  const canonical = process.env.SOCIAL_OAUTH_BASE_URL;
+  if (canonical) return canonical.replace(/\/+$/, "");
+
   const proto = req.headers["x-forwarded-proto"] || "http";
   const host = req.headers["x-forwarded-host"] || req.headers.host || "localhost:3000";
   return `${proto}://${host}`;
