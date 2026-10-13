@@ -197,7 +197,7 @@ const instagram = {
     url.searchParams.set("response_type", "code");
     url.searchParams.set(
       "scope",
-      ["instagram_basic", "instagram_manage_insights", "pages_show_list", "pages_read_engagement"].join(","),
+      ["instagram_basic", "pages_show_list", "pages_read_engagement"].join(","),
     );
     return url.toString();
   },
