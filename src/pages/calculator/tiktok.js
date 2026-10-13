@@ -51,6 +51,8 @@ import { TikTokLogo } from "@/components/CalcHero";
 import { FaUsers } from "react-icons/fa";
 import { showMonetagAd } from "@/lib/loadMonetag";
 import AdsterraBanner from "@/components/AdsterraBanner";
+import DualFlowHeader from "@/components/DualFlowHeader";
+import StagedLoadingModal from "@/components/StagedLoadingModal";
 
 const formatIDR = (value) =>
   `Rp ${Math.round(Number(value) || 0).toLocaleString("id-ID")}`;
@@ -80,6 +82,8 @@ TikTok.getLayout = function getLayout(page) {
 
 export default function TikTok() {
   const [results, setResults] = useState(null);
+  const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
+  const pendingResultsRef = useRef(null);
   const userClickedSubmitRef = useRef(false);
   const methods = useForm({
     defaultValues: {
@@ -162,7 +166,8 @@ export default function TikTok() {
     const primary =
       contentTypes.find((ct) => ct.id === "shortVideo") ?? contentTypes[0];
 
-    setResults({
+    // Tahan dulu di ref: `results` baru dipasang setelah staged loading selesai.
+    pendingResultsRef.current = {
       niche: nicheConfig.label,
       displayPicture: data.displayPicture,
       fullName: data.fullName,
@@ -182,7 +187,9 @@ export default function TikTok() {
       cpm: primary.cpm,
       ratePerVideo: primary.rate,
       contentTypes,
-    });
+    };
+
+    setIsLoadingModalOpen(true);
 
     // Iklan hanya dibuka kalau submit dipicu oleh klik tombol: `window.open`
     // butuh user gesture, submit programatik cuma akan diblokir popup blocker.
@@ -191,6 +198,18 @@ export default function TikTok() {
       showMonetagAd(); // no-op kalau masih di dalam jendela throttle 5 menit
     }
   };
+
+  /**
+   * Hasil ditahan di ref selama staged loading modal jalan, baru dipasang ke
+   * state `results` saat progress menyentuh 100%. Kalau langsung `setResults`,
+   * blok hasil muncul bersamaan dengan modal, jadi animasinya tidak kelihatan
+   * (Issue #12 minta loading tampil dulu sampai 100%).
+   */
+  const handleStagedLoadingComplete = useCallback(() => {
+    setIsLoadingModalOpen(false);
+    setResults(pendingResultsRef.current);
+    pendingResultsRef.current = null;
+  }, []);
 
   const handleCalculateClick = () => {
     userClickedSubmitRef.current = true;
@@ -329,13 +348,15 @@ export default function TikTok() {
               </Box>
 
               {!results && (
-                <Box
-                  bg="surfaceInverse"
-                  borderWidth="1px"
-                  borderColor="borderInverse"
-                  borderRadius="card"
-                  p={8}
-                >
+                <>
+                  <DualFlowHeader platform="tiktok" methods={methods} />
+                  <Box
+                    bg="surfaceInverse"
+                    borderWidth="1px"
+                    borderColor="borderInverse"
+                    borderRadius="card"
+                    p={8}
+                  >
                   <Box mb={8}>
                     <Heading size="md" color="fgInverse" mb={4}>
                       Bagian 1: Identitas Akun
@@ -487,7 +508,8 @@ export default function TikTok() {
                       Hitung Rate Card
                     </Button>
                   </Box>
-                </Box>
+                  </Box>
+                </>
               )}
 
               {results && (
@@ -847,6 +869,10 @@ export default function TikTok() {
             )}
           </Box>
         </LightMode>
+        <StagedLoadingModal
+          isOpen={isLoadingModalOpen}
+          onComplete={handleStagedLoadingComplete}
+        />
       </RHFFormProvider>
     </>
   );
