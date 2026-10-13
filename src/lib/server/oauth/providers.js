@@ -174,14 +174,25 @@ const youtube = {
 /* Instagram (Instagram Login & Instagram Graph API v26.0)            */
 /* ================================================================== */
 
+/**
+ * Instagram Login memakai kredensial BERBEDA dari App ID/Secret Meta biasa.
+ * App Dashboard → Instagram → "API setup with Instagram business login" →
+ * "Set up Instagram business login" → Business login settings menampilkan
+ * *Instagram App ID* & *Instagram App Secret*. Kalau yang dipakai adalah
+ * App ID dari Settings → Basic, Meta membalas "Invalid platform app".
+ * Kita utamakan env khusus, fallback ke nama lama biar tidak breaking.
+ */
+const IG_APP_ID = () => process.env.INSTAGRAM_LOGIN_APP_ID || process.env.INSTAGRAM_APP_ID;
+const IG_APP_SECRET = () => process.env.INSTAGRAM_LOGIN_APP_SECRET || process.env.INSTAGRAM_APP_SECRET;
+
 const instagram = {
   id: "instagram",
   label: "Instagram",
 
-  requiredEnv: ["INSTAGRAM_APP_ID", "INSTAGRAM_APP_SECRET"],
+  requiredEnv: ["INSTAGRAM_LOGIN_APP_ID", "INSTAGRAM_LOGIN_APP_SECRET"],
 
   configured() {
-    return Boolean(process.env.INSTAGRAM_APP_ID && process.env.INSTAGRAM_APP_SECRET);
+    return Boolean(IG_APP_ID() && IG_APP_SECRET());
   },
 
   assertConfigured() {
@@ -192,7 +203,7 @@ const instagram = {
     this.assertConfigured();
     // Menggunakan Instagram Login (api.instagram.com) langsung — tanpa Facebook Page
     const url = new URL("https://www.instagram.com/oauth/authorize");
-    url.searchParams.set("client_id", process.env.INSTAGRAM_APP_ID);
+    url.searchParams.set("client_id", IG_APP_ID());
     url.searchParams.set("redirect_uri", redirectUri);
     url.searchParams.set("state", state);
     url.searchParams.set("response_type", "code");
@@ -206,14 +217,18 @@ const instagram = {
   async exchangeCode({ code, redirectUri }) {
     this.assertConfigured();
 
+    // Meta menambahkan fragmen "#_" di akhir authorization code; harus dibuang
+    // sebelum ditukar, kalau tidak penukaran gagal.
+    const authCode = String(code || "").replace(/#_$/, "");
+
     // 1) Tukar code dengan short-lived token di api.instagram.com
     const tokenUrl = new URL("https://api.instagram.com/oauth/access_token");
     const res = await postForm(tokenUrl.toString(), {
-      client_id: process.env.INSTAGRAM_APP_ID,
-      client_secret: process.env.INSTAGRAM_APP_SECRET,
+      client_id: IG_APP_ID(),
+      client_secret: IG_APP_SECRET(),
       grant_type: "authorization_code",
       redirect_uri: redirectUri,
-      code,
+      code: authCode,
     });
 
     if (!res.ok || !res.data.access_token) {
@@ -228,7 +243,7 @@ const instagram = {
     // 2) Tukar short-lived token menjadi long-lived token (60 hari)
     const longUrl = new URL("https://graph.instagram.com/access_token");
     longUrl.searchParams.set("grant_type", "ig_exchange_token");
-    longUrl.searchParams.set("client_secret", process.env.INSTAGRAM_APP_SECRET);
+    longUrl.searchParams.set("client_secret", IG_APP_SECRET());
     longUrl.searchParams.set("access_token", shortToken);
 
     const longRes = await getJson(longUrl.toString());
