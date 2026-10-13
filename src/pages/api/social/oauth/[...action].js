@@ -149,11 +149,23 @@ export default async function handler(req, res) {
           ? payload.next
           : `/calculator/${payload.platform}`;
 
-      return res.redirect(302, `${safeNext}?connected=1`);
+      // Selalu lewat halaman penutup: kalau dibuka sebagai popup (ada opener),
+      // halaman itu mengirim sinyal ke jendela utama lalu menutup diri; kalau
+      // navigasi penuh (popup diblokir), ia meneruskan ke halaman kalkulator.
+      const closeUrl = new URL("/oauth/close", baseUrl);
+      closeUrl.searchParams.set("next", safeNext);
+      closeUrl.searchParams.set("platform", payload.platform);
+      closeUrl.searchParams.set("status", "success");
+      return res.redirect(302, closeUrl.toString());
     } catch (err) {
       console.error("[OAuth Callback Error]:", err);
-      const message = encodeURIComponent(err.message || "Gagal menghubungkan akun.");
-      return res.redirect(302, `/calculator?oauth_error=${message}`);
+      const message = err.message || "Gagal menghubungkan akun.";
+      const baseUrl = getBaseUrl(req);
+      const closeUrl = new URL("/oauth/close", baseUrl);
+      closeUrl.searchParams.set("next", "/calculator");
+      closeUrl.searchParams.set("status", "error");
+      closeUrl.searchParams.set("message", message);
+      return res.redirect(302, closeUrl.toString());
     }
   }
 

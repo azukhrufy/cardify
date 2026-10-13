@@ -130,35 +130,71 @@ export default function DualFlowHeader({ platform, methods, onAutoFilled }) {
     };
   }, [platform]);
 
+  // Listener pesan postMessage dari jendela popup OAuth yang sukses
   useEffect(() => {
-    if (!router.isReady) return;
+    const handleMessage = (event) => {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data;
+      if (!data || data.type !== "cardify-oauth-result") return;
 
-    if (oauthError) {
-      toast({
-        title: "Gagal menghubungkan akun",
-        description: oauthError,
-        status: "error",
-        duration: 9000,
-        isClosable: true,
-      });
-      router.replace(router.pathname, undefined, { shallow: true });
+      if (data.status === "success" && data.platform === platform) {
+        fetchConnection().then((me) => {
+          if (me.connected) {
+            setConnection(me);
+            toast({
+              title: "Akun berhasil terhubung!",
+              description: `Klik "Auto-Isi Form" untuk menarik metrik ${platformMeta.label} Anda.`,
+              status: "success",
+              duration: 5000,
+              isClosable: true,
+            });
+          }
+        });
+      } else if (data.status === "error") {
+        toast({
+          title: "Gagal menghubungkan akun",
+          description: data.message || "Terjadi kesalahan saat otorisasi.",
+          status: "error",
+          duration: 7000,
+          isClosable: true,
+        });
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [platform, platformMeta.label, toast]);
+
+  const startConnect = useCallback(() => {
+    const url = buildConnectUrl(platform, `/calculator/${platform}`);
+
+    const width = 600;
+    const height = 720;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+
+    const features = [
+      `width=${Math.round(width)}`,
+      `height=${Math.round(height)}`,
+      `top=${Math.round(top)}`,
+      `left=${Math.round(left)}`,
+      "scrollbars=yes",
+      "resizable=yes",
+      "noopener=no",
+    ].join(",");
+
+    // Jendela mini (popup) supaya kalkulator tetap terlihat di belakang saat
+    // user login. Nama jendela unik per platform agar tidak menabrak tab lain.
+    const popup = window.open(url, `cardify_oauth_${platform}`, features);
+
+    if (!popup || popup.closed) {
+      // Popup diblokir (mis. karena dianggap bukan gesture user). Jatuh ke
+      // navigasi halaman penuh — alur /oauth/close menangani keduanya.
+      window.location.href = url;
       return;
     }
 
-    if (justConnected) {
-      toast({
-        title: "Akun berhasil terhubung!",
-        description: `Klik "Auto-Isi Form" untuk menarik metrik ${platformMeta.label} Anda.`,
-        status: "success",
-        duration: 6000,
-        isClosable: true,
-      });
-      router.replace(router.pathname, undefined, { shallow: true });
-    }
-  }, [router.isReady, router.query.connected, router.query.oauth_error, router, platformMeta.label, toast, oauthError, justConnected]);
-
-  const startConnect = useCallback(() => {
-    window.location.href = buildConnectUrl(platform, `/calculator/${platform}`);
+    popup.focus();
   }, [platform]);
 
   const handleDisconnect = useCallback(async () => {
