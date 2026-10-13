@@ -49,6 +49,8 @@ import { YoutubeLogo } from "@/components/CalcHero";
 import { FaUsers } from "react-icons/fa";
 import { showMonetagAd } from "@/lib/loadMonetag";
 import AdsterraBanner from "@/components/AdsterraBanner";
+import DualFlowHeader from "@/components/DualFlowHeader";
+import StagedLoadingModal from "@/components/StagedLoadingModal";
 
 const formatIDR = (value) =>
   `Rp ${Math.round(Number(value) || 0).toLocaleString("id-ID")}`;
@@ -73,6 +75,8 @@ Youtube.getLayout = function getLayout(page) {
 
 export default function Youtube() {
   const [results, setResults] = useState(null);
+  const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
+  const pendingResultsRef = useRef(null);
   const userClickedSubmitRef = useRef(false);
   const methods = useForm({
     defaultValues: {
@@ -142,7 +146,8 @@ export default function Youtube() {
     const primary =
       contentTypes.find((ct) => ct.id === "dedicatedVideo") ?? contentTypes[0];
 
-    setResults({
+    // Tahan dulu di ref: `results` baru dipasang setelah staged loading selesai.
+    pendingResultsRef.current = {
       niche: nicheConfig.label,
       displayPicture: data.displayPicture,
       fullName: data.fullName,
@@ -161,7 +166,9 @@ export default function Youtube() {
       ratePerVideo: primary.rate,
       youtubeERBenchmark: nicheConfig.youtubeERBenchmark,
       contentTypes,
-    });
+    };
+
+    setIsLoadingModalOpen(true);
 
     // Iklan hanya dibuka kalau submit dipicu oleh klik tombol: `window.open`
     // butuh user gesture, submit programatik cuma akan diblokir popup blocker.
@@ -170,6 +177,16 @@ export default function Youtube() {
       showMonetagAd(); // no-op kalau masih di dalam jendela throttle 5 menit
     }
   };
+
+  /**
+   * Hasil ditahan di ref selama staged loading modal jalan, baru dipasang ke
+   * state `results` saat progress menyentuh 100%.
+   */
+  const handleStagedLoadingComplete = useCallback(() => {
+    setIsLoadingModalOpen(false);
+    setResults(pendingResultsRef.current);
+    pendingResultsRef.current = null;
+  }, []);
 
   const handleCalculateClick = () => {
     userClickedSubmitRef.current = true;
@@ -266,13 +283,15 @@ export default function Youtube() {
               </Box>
 
               {!results && (
-                <Box
-                  bg="surfaceInverse"
-                  borderWidth="1px"
-                  borderColor="borderInverse"
-                  borderRadius="card"
-                  p={8}
-                >
+                <>
+                  <DualFlowHeader platform="youtube" methods={methods} />
+                  <Box
+                    bg="surfaceInverse"
+                    borderWidth="1px"
+                    borderColor="borderInverse"
+                    borderRadius="card"
+                    p={8}
+                  >
                   <Box mb={8}>
                     <Heading size="md" color="fgInverse" mb={4}>
                       Bagian 1: Identitas Channel
@@ -423,7 +442,8 @@ export default function Youtube() {
                       Hitung Rate Card
                     </Button>
                   </Box>
-                </Box>
+                  </Box>
+                </>
               )}
 
               {results && (
@@ -698,6 +718,10 @@ export default function Youtube() {
             )}
           </Box>
         </LightMode>
+        <StagedLoadingModal
+          isOpen={isLoadingModalOpen}
+          onComplete={handleStagedLoadingComplete}
+        />
       </RHFFormProvider>
     </>
   );
