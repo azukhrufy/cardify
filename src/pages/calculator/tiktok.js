@@ -349,7 +349,7 @@ export default function TikTok() {
 
               {!results && (
                 <>
-                  <DualFlowHeader platform="tiktok" methods={methods} />
+                  {/* <DualFlowHeader platform="tiktok" methods={methods} /> */}
                   <Box
                     bg="surfaceInverse"
                     borderWidth="1px"

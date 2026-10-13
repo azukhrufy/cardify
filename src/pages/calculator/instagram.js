@@ -343,7 +343,7 @@ export default function Instagram() {
 
               {!results && (
                 <>
-                  <DualFlowHeader platform="instagram" methods={methods} />
+                  {/* <DualFlowHeader platform="instagram" methods={methods} /> */}
                   <Box
                     bg="surfaceInverse"
                     borderWidth="1px"

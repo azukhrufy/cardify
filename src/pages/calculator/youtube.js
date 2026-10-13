@@ -284,7 +284,7 @@ export default function Youtube() {
 
               {!results && (
                 <>
-                  <DualFlowHeader platform="youtube" methods={methods} />
+                  {/* <DualFlowHeader platform="youtube" methods={methods} /> */}
                   <Box
                     bg="surfaceInverse"
                     borderWidth="1px"
