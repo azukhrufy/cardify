@@ -31,6 +31,54 @@ function getBaseUrl(req) {
   return `${proto}://${host}`;
 }
 
+/**
+ * Menerjemahkan error mentah dari Meta/Google menjadi langkah perbaikan yang
+ * bisa langsung dieksekusi user. Error OAuth hampir selalu masalah konfigurasi
+ * dashboard, bukan bug aplikasi — pesan mentah seperti "Insufficient developer
+ * role" tidak memberi tahu user apa yang harus dilakukan.
+ */
+const ERROR_GUIDE = [
+  {
+    match: /insufficient developer role/i,
+    note:
+      "Akun Instagram yang dipakai login belum berperan sebagai Tester/Developer di app ini. " +
+      "Buka Meta for Developers → app → Peran (Roles) → Instagram Testers → tambahkan username IG Anda, " +
+      "lalu terima undangannya dari aplikasi Instagram (Pengaturan → Aplikasi & situs web → Undangan penguji). " +
+      "Pastikan akun IG bertipe Bisnis/Kreator.",
+  },
+  {
+    match: /invalid platform app/i,
+    note:
+      "client_id yang dipakai adalah Meta App ID, bukan Instagram App ID. Salin nilai dari " +
+      "Instagram → API setup with Instagram business login → Business login settings.",
+  },
+  {
+    match: /invalid redirect_uri|redirect_uri.*invalid/i,
+    note:
+      "redirect_uri harus terdaftar PERSIS sama (protokol, domain, path, tanpa trailing slash) " +
+      "di daftar OAuth redirect URIs pada Business login settings.",
+  },
+  {
+    match: /invalid scopes|invalid scope/i,
+    note:
+      "Ada nama izin (scope) yang tidak dikenal/tidak disetujui untuk app ini. Samakan daftar scope " +
+      "dengan yang tampil di langkah 'Siapkan login bisnis Instagram'.",
+  },
+  {
+    match: /no instagram business account|tidak ada akun instagram bisnis/i,
+    note:
+      "Akun Instagram yang login masih tipe Personal. Ubah ke Bisnis/Kreator di aplikasi Instagram: " +
+      "Pengaturan → Jenis akun dan alat → Beralih ke akun profesional.",
+  },
+];
+
+function explainOAuthError(rawMessage) {
+  const message = String(rawMessage || "").trim();
+  const hit = ERROR_GUIDE.find((entry) => entry.match.test(message));
+  if (!hit) return message || "Gagal menghubungkan akun.";
+  return `${message}\n\n💡 Cara mengatasi: ${hit.note}`;
+}
+
 export default async function handler(req, res) {
   const { action } = req.query;
   const pathAction = Array.isArray(action) ? action[0] : action;
@@ -165,7 +213,7 @@ export default async function handler(req, res) {
       return res.redirect(302, closeUrl.toString());
     } catch (err) {
       console.error("[OAuth Callback Error]:", err);
-      const message = err.message || "Gagal menghubungkan akun.";
+      const message = explainOAuthError(err.message);
       const baseUrl = getBaseUrl(req);
       const closeUrl = new URL("/oauth/close", baseUrl);
       closeUrl.searchParams.set("next", "/calculator");
