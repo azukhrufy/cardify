@@ -1,91 +1,187 @@
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  Avatar,
+  Badge,
   Box,
   Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Text,
-  VStack,
-  HStack,
-  Badge,
   Flex,
+  HStack,
+  Spinner,
+  Text,
   useToast,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import {
-  fetchSocialProfile,
-  isAutoFillDemo,
   SOCIAL_PLATFORMS,
+  buildConnectUrl,
+  fetchOAuthStatus,
+  fetchConnection,
+  fetchConnectedMetrics,
+  disconnect,
 } from "@/lib/socialAutoFill";
-import { FaLink } from "react-icons/fa6";
+import { FaLink, FaRightFromBracket } from "react-icons/fa6";
+
+function mapMetricsToForm(platform, data, methods) {
+  const set = (name, value) => {
+    if (value === undefined || value === null) return;
+    if (typeof value === "number" && !Number.isFinite(value)) return;
+    methods.setValue(name, value, { shouldValidate: true });
+  };
+
+  set("fullName", data.fullName);
+
+  if (platform === "tiktok") {
+    set("tiktokUsername", data.username ? `@${String(data.username).replace(/^@/, "")}` : undefined);
+    set("totalFollowers", data.followers);
+    set("dataPeriod", data.dataPeriod);
+    set("totalViews", data.totalViews);
+    set("totalLikes", data.totalLikes);
+    set("totalComments", data.totalComments);
+    set("totalShares", data.totalShares);
+    set("videoCount", data.videoCount);
+    return;
+  }
+
+  if (platform === "instagram") {
+    set(
+      "instagramUsername",
+      data.username ? `@${String(data.username).replace(/^@/, "")}` : undefined,
+    );
+    set("totalFollowers", data.followers);
+    set("dataPeriod", data.dataPeriod);
+    set("totalReach", data.totalReach);
+    set("totalLikes", data.totalLikes);
+    set("totalComments", data.totalComments);
+    set("totalSharesSaves", data.totalSharesSaves);
+    set("contentCount", data.contentCount);
+    return;
+  }
+
+  set("youtubeHandle", data.username ? `@${String(data.username).replace(/^@/, "")}` : undefined);
+  set("totalSubscribers", data.followers);
+  set("dataPeriod", data.dataPeriod);
+  set("avgViewsPerVideo", data.avgViewsPerVideo);
+  set("avgLikesPerVideo", data.avgLikesPerVideo);
+  set("avgCommentsPerVideo", data.avgCommentsPerVideo);
+  set("avgSharesPerVideo", data.avgSharesPerVideo);
+}
 
 /**
  * Pilihan Dual-Flow di atas form kalkulator.
  *
- * User bisa memilih:
- * 1. "Isi Manual" (default) -> form kosong siap diisi sendiri.
- * 2. "Hubungkan Akun / Auto-Fill" -> masukkan handle/URL -> tombol auto-isi ->
- *    mengisi field form secara instan lewat `methods.setValue`.
+ * "Isi Manual" → form kosong, diisi user sendiri.
+ * "Hubungkan Akun" → user login ke platform, Cardify menarik metrik akun itu
+ *   langsung dari API resmi. Tidak ada data simulasi di jalur ini.
  */
 export default function DualFlowHeader({ platform, methods, onAutoFilled }) {
-  const [mode, setMode] = useState("manual"); // "manual" | "autofill"
-  const [handleInput, setHandleInput] = useState("");
+  // `modeOverride` = pilihan manual user; `null` berarti "belum memilih", dan
+  // mode diturunkan dari URL supaya redirect OAuth (?connected / ?oauth_error)
+  // langsung membuka panel connect tanpa setState di dalam effect.
+  const [modeOverride, setModeOverride] = useState(null);
+  const [providerStatus, setProviderStatus] = useState(null);
+  const [sessionConfigured, setSessionConfigured] = useState(true);
+  const [connection, setConnection] = useState({ connected: false });
   const [isLoading, setIsLoading] = useState(false);
+  const [isBooting, setIsBooting] = useState(true);
   const toast = useToast();
+  const router = useRouter();
 
   const platformMeta = SOCIAL_PLATFORMS[platform] || { label: platform };
 
-  const handleFetch = async () => {
-    if (!handleInput.trim()) {
+  const oauthError =
+    router.isReady && router.query.oauth_error
+      ? decodeURIComponent(String(router.query.oauth_error))
+      : null;
+  const justConnected = router.isReady && router.query.connected === "1";
+  const mode = modeOverride ?? (oauthError || justConnected ? "autofill" : "manual");
+  const setMode = setModeOverride;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const [status, me] = await Promise.all([fetchOAuthStatus(), fetchConnection()]);
+        if (cancelled) return;
+
+        setSessionConfigured(status.sessionConfigured);
+        setProviderStatus(
+          (status.providers || []).find((p) => p.id === platform) || {
+            configured: false,
+            requiredEnv: [],
+          },
+        );
+
+        if (me.connected && me.platform === platform) {
+          setConnection(me);
+        } else {
+          setConnection({ connected: false });
+        }
+      } finally {
+        if (!cancelled) setIsBooting(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [platform]);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    if (oauthError) {
       toast({
-        title: "Username wajib diisi",
-        description: `Masukkan username atau link profil ${platformMeta.label} Anda terlebih dahulu.`,
-        status: "warning",
-        duration: 4000,
+        title: "Gagal menghubungkan akun",
+        description: oauthError,
+        status: "error",
+        duration: 9000,
         isClosable: true,
       });
+      router.replace(router.pathname, undefined, { shallow: true });
       return;
     }
 
+    if (justConnected) {
+      toast({
+        title: "Akun berhasil terhubung!",
+        description: `Klik "Auto-Isi Form" untuk menarik metrik ${platformMeta.label} Anda.`,
+        status: "success",
+        duration: 6000,
+        isClosable: true,
+      });
+      router.replace(router.pathname, undefined, { shallow: true });
+    }
+  }, [router.isReady, router.query.connected, router.query.oauth_error, router, platformMeta.label, toast, oauthError, justConnected]);
+
+  const startConnect = useCallback(() => {
+    window.location.href = buildConnectUrl(platform, `/calculator/${platform}`);
+  }, [platform]);
+
+  const handleDisconnect = useCallback(async () => {
+    await disconnect();
+    setConnection({ connected: false });
+    toast({
+      title: "Akun terputus",
+      description: `${platformMeta.label} sudah tidak terhubung lagi.`,
+      status: "info",
+      duration: 4000,
+      isClosable: true,
+    });
+  }, [platformMeta.label, toast]);
+
+  const handleAutoFill = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await fetchSocialProfile(platform, handleInput);
-
-      // Map data ke rxf fields berdasarkan platform
-      if (platform === "tiktok") {
-        if (data.fullName) methods.setValue("fullName", data.fullName, { shouldValidate: true });
-        if (data.username) methods.setValue("tiktokUsername", `@${data.username.replace(/^@/, "")}`, { shouldValidate: true });
-        if (data.followers) methods.setValue("totalFollowers", data.followers, { shouldValidate: true });
-        if (data.dataPeriod) methods.setValue("dataPeriod", data.dataPeriod, { shouldValidate: true });
-        if (data.totalViews) methods.setValue("totalViews", data.totalViews, { shouldValidate: true });
-        if (data.totalLikes) methods.setValue("totalLikes", data.totalLikes, { shouldValidate: true });
-        if (data.totalComments) methods.setValue("totalComments", data.totalComments, { shouldValidate: true });
-        if (data.totalShares) methods.setValue("totalShares", data.totalShares, { shouldValidate: true });
-        if (data.videoCount) methods.setValue("videoCount", data.videoCount, { shouldValidate: true });
-      } else if (platform === "instagram") {
-        if (data.fullName) methods.setValue("fullName", data.fullName, { shouldValidate: true });
-        if (data.username) methods.setValue("instagramUsername", `@${data.username.replace(/^@/, "")}`, { shouldValidate: true });
-        if (data.followers) methods.setValue("totalFollowers", data.followers, { shouldValidate: true });
-        if (data.dataPeriod) methods.setValue("dataPeriod", data.dataPeriod, { shouldValidate: true });
-        if (data.totalReach) methods.setValue("totalReach", data.totalReach, { shouldValidate: true });
-        if (data.totalLikes) methods.setValue("totalLikes", data.totalLikes, { shouldValidate: true });
-        if (data.totalComments) methods.setValue("totalComments", data.totalComments, { shouldValidate: true });
-        if (data.totalSharesSaves) methods.setValue("totalSharesSaves", data.totalSharesSaves, { shouldValidate: true });
-        if (data.contentCount) methods.setValue("contentCount", data.contentCount, { shouldValidate: true });
-      } else if (platform === "youtube") {
-        if (data.fullName) methods.setValue("fullName", data.fullName, { shouldValidate: true });
-        if (data.username) methods.setValue("youtubeHandle", `@${data.username.replace(/^@/, "")}`, { shouldValidate: true });
-        if (data.followers) methods.setValue("totalSubscribers", data.followers, { shouldValidate: true });
-        if (data.dataPeriod) methods.setValue("dataPeriod", data.dataPeriod, { shouldValidate: true });
-        if (data.avgViewsPerVideo) methods.setValue("avgViewsPerVideo", data.avgViewsPerVideo, { shouldValidate: true });
-        if (data.avgLikesPerVideo) methods.setValue("avgLikesPerVideo", data.avgLikesPerVideo, { shouldValidate: true });
-        if (data.avgCommentsPerVideo) methods.setValue("avgCommentsPerVideo", data.avgCommentsPerVideo, { shouldValidate: true });
-        if (data.avgSharesPerVideo) methods.setValue("avgSharesPerVideo", data.avgSharesPerVideo, { shouldValidate: true });
-      }
+      const data = await fetchConnectedMetrics();
+      mapMetricsToForm(platform, data, methods);
 
       toast({
-        title: "Berhasil terhubung!",
-        description: `Metrik publik ${platformMeta.label} berhasil disinkronkan ke form. Anda tetap bisa mengubah nilainya.`,
+        title: "Data berhasil ditarik!",
+        description: `Metrik ${platformMeta.label} asli sudah masuk ke form. Anda tetap bisa mengubahnya.`,
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -93,17 +189,23 @@ export default function DualFlowHeader({ platform, methods, onAutoFilled }) {
 
       if (onAutoFilled) onAutoFilled(data);
     } catch (err) {
+      if (err.code === "NOT_CONNECTED" || err.code === "REAUTH_REQUIRED") {
+        setConnection({ connected: false });
+      }
       toast({
-        title: "Gagal menghubungkan akun",
+        title: "Gagal menarik data",
         description: err.message || "Terjadi kesalahan saat mengambil data.",
         status: "error",
-        duration: 6000,
+        duration: 7000,
         isClosable: true,
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [methods, onAutoFilled, platform, platformMeta.label, toast]);
+
+  const notConfigured = providerStatus && !providerStatus.configured;
+  const blocked = notConfigured || !sessionConfigured;
 
   return (
     <Box
@@ -114,13 +216,19 @@ export default function DualFlowHeader({ platform, methods, onAutoFilled }) {
       p={6}
       mb={8}
     >
-      <Flex direction={{ base: "column", md: "row" }} justify="space-between" align={{ base: "stretch", md: "center" }} gap={4}>
+      <Flex
+        direction={{ base: "column", md: "row" }}
+        justify="space-between"
+        align={{ base: "stretch", md: "center" }}
+        gap={4}
+      >
         <Box>
           <Text fontSize="md" fontWeight="semibold" color="fgInverse">
             Cara Pengisian Data
           </Text>
           <Text fontSize="sm" color="mutedInverse">
-            Pilih metode isi manual atau sinkronisasi otomatis dari akun {platformMeta.label}.
+            Isi manual sendiri, atau hubungkan akun {platformMeta.label} Anda untuk menarik
+            metrik aslinya.
           </Text>
         </Box>
         <HStack spacing={2}>
@@ -138,47 +246,103 @@ export default function DualFlowHeader({ platform, methods, onAutoFilled }) {
             colorScheme="pink"
             onClick={() => setMode("autofill")}
           >
-            Hubungkan Akun (Auto-Fill)
+            Hubungkan Akun
           </Button>
         </HStack>
       </Flex>
 
       {mode === "autofill" && (
         <Box mt={6} pt={6} borderTopWidth="1px" borderColor="borderInverse">
-          <FormControl>
-            <FormLabel fontSize="sm" color="fgInverse">
-              Username atau URL Profil {platformMeta.label}
-            </FormLabel>
+          {isBooting ? (
             <HStack spacing={3}>
-              <Input
-                placeholder={`Contoh: @${platform}creator atau https://${platform}.com/@username`}
-                value={handleInput}
-                onChange={(e) => setHandleInput(e.target.value)}
-                bg="white"
-                color="black"
-              />
+              <Spinner size="sm" color="pink.400" />
+              <Text fontSize="sm" color="mutedInverse">
+                Memeriksa status koneksi…
+              </Text>
+            </HStack>
+          ) : blocked ? (
+            <Alert status="warning" borderRadius="md" bg="orange.50">
+              <AlertIcon />
+              <AlertDescription fontSize="sm" color="black">
+                {!sessionConfigured
+                  ? "Sesi OAuth belum diatur di server (SOCIAL_SESSION_SECRET kosong). Hubungi admin."
+                  : `Integrasi ${platformMeta.label} belum aktif di server. Kredensial yang dibutuhkan: ${
+                      (providerStatus?.requiredEnv || []).join(", ") || "-"
+                    }. Untuk sementara silakan pakai Isi Manual.`}
+              </AlertDescription>
+            </Alert>
+          ) : connection.connected ? (
+            <Flex
+              direction={{ base: "column", sm: "row" }}
+              align={{ base: "stretch", sm: "center" }}
+              justify="space-between"
+              gap={4}
+            >
+              <HStack spacing={3}>
+                <Avatar
+                  size="sm"
+                  name={connection.profile?.fullName || platformMeta.label}
+                  src={connection.profile?.avatarUrl || undefined}
+                />
+                <Box>
+                  <HStack spacing={2}>
+                    <Text fontSize="sm" fontWeight="semibold" color="fgInverse">
+                      {connection.profile?.fullName || platformMeta.label}
+                    </Text>
+                    <Badge colorScheme="green" fontSize="10px">
+                      Terhubung
+                    </Badge>
+                  </HStack>
+                  {connection.profile?.username && (
+                    <Text fontSize="xs" color="mutedInverse">
+                      @{String(connection.profile.username).replace(/^@/, "")}
+                    </Text>
+                  )}
+                </Box>
+              </HStack>
+
+              <HStack spacing={2}>
+                <Button
+                  colorScheme="pink"
+                  onClick={handleAutoFill}
+                  isLoading={isLoading}
+                  loadingText="Menarik data..."
+                  leftIcon={<FaLink />}
+                >
+                  Auto-Isi Form
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  color="mutedInverse"
+                  onClick={handleDisconnect}
+                  leftIcon={<FaRightFromBracket />}
+                >
+                  Putuskan
+                </Button>
+              </HStack>
+            </Flex>
+          ) : (
+            <Flex
+              direction={{ base: "column", sm: "row" }}
+              align={{ base: "stretch", sm: "center" }}
+              justify="space-between"
+              gap={4}
+            >
+              <Text fontSize="sm" color="mutedInverse" maxW="lg">
+                Login ke akun {platformMeta.label} Anda lewat halaman resmi platform. Cardify
+                menarik metrik akun Anda langsung dari API resmi — bukan data simulasi.
+              </Text>
               <Button
                 colorScheme="pink"
-                onClick={handleFetch}
-                isLoading={isLoading}
-                loadingText="Mengambil..."
+                onClick={startConnect}
                 flexShrink={0}
                 leftIcon={<FaLink />}
               >
-                Auto-Isi Form
+                {platformMeta.connectLabel}
               </Button>
-            </HStack>
-            <HStack spacing={2} mt={2}>
-              <Text fontSize="xs" color="mutedInverse">
-                Data ditarik secara publik. Anda bebas mengedit hasil auto-fill sebelum di-generate.
-              </Text>
-              {isAutoFillDemo && (
-                <Badge colorScheme="purple" fontSize="10px">
-                  Mode Demo Aktif
-                </Badge>
-              )}
-            </HStack>
-          </FormControl>
+            </Flex>
+          )}
         </Box>
       )}
     </Box>
