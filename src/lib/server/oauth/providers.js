@@ -171,7 +171,7 @@ const youtube = {
 };
 
 /* ================================================================== */
-/* Instagram (Facebook Login + Instagram Graph API)                    */
+/* Instagram (Instagram Login & Instagram Graph API v26.0)            */
 /* ================================================================== */
 
 const instagram = {
@@ -190,14 +190,15 @@ const instagram = {
 
   buildAuthUrl({ state, redirectUri }) {
     this.assertConfigured();
-    const url = new URL(`https://www.facebook.com/${DEFAULT_GRAPH_VERSION}/dialog/oauth`);
+    // Menggunakan Instagram Login (api.instagram.com) langsung — tanpa Facebook Page
+    const url = new URL("https://www.instagram.com/oauth/authorize");
     url.searchParams.set("client_id", process.env.INSTAGRAM_APP_ID);
     url.searchParams.set("redirect_uri", redirectUri);
     url.searchParams.set("state", state);
     url.searchParams.set("response_type", "code");
     url.searchParams.set(
       "scope",
-      ["instagram_basic", "pages_show_list", "pages_read_engagement"].join(","),
+      ["instagram_business_basic", "instagram_business_manage_insights"].join(","),
     );
     return url.toString();
   },
@@ -205,61 +206,45 @@ const instagram = {
   async exchangeCode({ code, redirectUri }) {
     this.assertConfigured();
 
-    // 1) code → short-lived user token
-    const shortUrl = new URL(`https://graph.facebook.com/${DEFAULT_GRAPH_VERSION}/oauth/access_token`);
-    shortUrl.searchParams.set("client_id", process.env.INSTAGRAM_APP_ID);
-    shortUrl.searchParams.set("client_secret", process.env.INSTAGRAM_APP_SECRET);
-    shortUrl.searchParams.set("redirect_uri", redirectUri);
-    shortUrl.searchParams.set("code", code);
+    // 1) Tukar code dengan short-lived token di api.instagram.com
+    const tokenUrl = new URL("https://api.instagram.com/oauth/access_token");
+    const res = await postForm(tokenUrl.toString(), {
+      client_id: process.env.INSTAGRAM_APP_ID,
+      client_secret: process.env.INSTAGRAM_APP_SECRET,
+      grant_type: "authorization_code",
+      redirect_uri: redirectUri,
+      code,
+    });
 
-    const short = await getJson(shortUrl.toString());
-    if (!short.ok || !short.data.access_token) {
-      throw new OAuthError(short.data?.error?.message || "Gagal menukar kode otorisasi Meta.");
-    }
-
-    // 2) short-lived → long-lived (≈60 hari). Token pendek hanya bertahan 1 jam.
-    const longUrl = new URL(`https://graph.facebook.com/${DEFAULT_GRAPH_VERSION}/oauth/access_token`);
-    longUrl.searchParams.set("grant_type", "fb_exchange_token");
-    longUrl.searchParams.set("client_id", process.env.INSTAGRAM_APP_ID);
-    longUrl.searchParams.set("client_secret", process.env.INSTAGRAM_APP_SECRET);
-    longUrl.searchParams.set("fb_exchange_token", short.data.access_token);
-
-    const long = await getJson(longUrl.toString());
-    const userToken = long.data?.access_token || short.data.access_token;
-    const expiresIn = long.data?.expires_in ?? 60 * 24 * 60 * 60;
-
-    // 3) Ambil Page + IG business account. Page token inilah yang dipakai untuk
-    //    membaca insight; page token turunan long-lived user token tidak expire.
-    const pages = await getJson(
-      `https://graph.facebook.com/${DEFAULT_GRAPH_VERSION}/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=${encodeURIComponent(userToken)}`,
-    );
-
-    if (!pages.ok) {
-      throw new OAuthError(pages.data?.error?.message || "Gagal membaca daftar Halaman Facebook.");
-    }
-
-    const withIg = (pages.data?.data || []).find((page) => page.instagram_business_account?.id);
-    if (!withIg) {
+    if (!res.ok || !res.data.access_token) {
       throw new OAuthError(
-        "Tidak ada akun Instagram Bisnis yang tertaut ke Halaman Facebook Anda. " +
-          "Ubah akun Instagram ke tipe Bisnis/Kreator lalu tautkan ke Halaman Facebook.",
-        { statusCode: 400, code: "NO_IG_BUSINESS_ACCOUNT" },
+        res.data?.error_message || res.data?.error?.message || "Gagal menukar kode otorisasi Instagram.",
       );
     }
 
+    const shortToken = res.data.access_token;
+    const igUserId = res.data.user_id;
+
+    // 2) Tukar short-lived token menjadi long-lived token (60 hari)
+    const longUrl = new URL("https://graph.instagram.com/access_token");
+    longUrl.searchParams.set("grant_type", "ig_exchange_token");
+    longUrl.searchParams.set("client_secret", process.env.INSTAGRAM_APP_SECRET);
+    longUrl.searchParams.set("access_token", shortToken);
+
+    const longRes = await getJson(longUrl.toString());
+    const accessToken = longRes.ok && longRes.data?.access_token ? longRes.data.access_token : shortToken;
+    const expiresIn = longRes.ok && longRes.data?.expires_in ? longRes.data.expires_in : 60 * 24 * 60 * 60;
+
     return {
-      accessToken: withIg.access_token || userToken,
-      userAccessToken: userToken,
-      refreshToken: null, // Meta tidak memakai refresh token; pakai fb_exchange_token.
+      accessToken,
+      refreshToken: null,
       expiresAt: days(expiresIn / (24 * 60 * 60)),
-      igUserId: withIg.instagram_business_account.id,
-      pageId: withIg.id,
-      pageName: withIg.name || "",
+      igUserId: igUserId ? String(igUserId) : null,
     };
   },
 
   async refresh(session) {
-    const token = session.userAccessToken || session.accessToken;
+    const token = session.accessToken;
     if (!token) {
       throw new OAuthError("Sesi Instagram tidak lengkap. Silakan hubungkan ulang.", {
         statusCode: 401,
@@ -267,11 +252,9 @@ const instagram = {
       });
     }
 
-    const url = new URL(`https://graph.facebook.com/${DEFAULT_GRAPH_VERSION}/oauth/access_token`);
-    url.searchParams.set("grant_type", "fb_exchange_token");
-    url.searchParams.set("client_id", process.env.INSTAGRAM_APP_ID);
-    url.searchParams.set("client_secret", process.env.INSTAGRAM_APP_SECRET);
-    url.searchParams.set("fb_exchange_token", token);
+    const url = new URL("https://graph.instagram.com/refresh_access_token");
+    url.searchParams.set("grant_type", "ig_refresh_token");
+    url.searchParams.set("access_token", token);
 
     const { ok, data } = await getJson(url.toString());
     if (!ok || !data.access_token) {
@@ -283,25 +266,26 @@ const instagram = {
 
     return {
       ...session,
-      userAccessToken: data.access_token,
+      accessToken: data.access_token,
       expiresAt: days((data.expires_in ?? 60 * 24 * 60 * 60) / (24 * 60 * 60)),
     };
   },
 
   async fetchMetrics(session) {
     const token = session.accessToken;
-    if (!session.igUserId || !token) {
-      throw new OAuthError("Sesi Instagram belum punya akun bisnis. Hubungkan ulang.", {
+    if (!token) {
+      throw new OAuthError("Sesi Instagram belum terautentikasi. Hubungkan ulang.", {
         statusCode: 401,
         code: "REAUTH_REQUIRED",
       });
     }
 
-    const base = `https://graph.facebook.com/${DEFAULT_GRAPH_VERSION}/${session.igUserId}`;
+    // Menggunakan graph.instagram.com/v26.0/me atau ID user langsung
+    const profileUrl = `https://graph.instagram.com/v26.0/me?fields=user_id,username,name,followers_count,media_count&access_token=${encodeURIComponent(
+      token,
+    )}`;
 
-    const profile = await getJson(
-      `${base}?fields=username,followers_count,media_count&access_token=${encodeURIComponent(token)}`,
-    );
+    const profile = await getJson(profileUrl);
     if (!profile.ok) {
       const code = profile.data?.error?.code;
       throw new OAuthError(
@@ -310,31 +294,38 @@ const instagram = {
       );
     }
 
-    const media = await getJson(
-      `${base}/media?fields=like_count,comments_count,timestamp,media_type&limit=25&access_token=${encodeURIComponent(token)}`,
-    );
-    const items = media.ok ? media.data?.data || [] : [];
+    const data = profile.data || {};
+    const igId = data.user_id || data.id;
+
+    // Ambil media dari endpoint /{ig_id}/media
+    let items = [];
+    if (igId) {
+      const mediaUrl = `https://graph.instagram.com/v26.0/${igId}/media?fields=like_count,comments_count,timestamp,media_type&limit=25&access_token=${encodeURIComponent(
+        token,
+      )}`;
+      const media = await getJson(mediaUrl);
+      if (media.ok) {
+        items = media.data?.data || [];
+      }
+    }
+
     const count = items.length;
     const sum = (key) => items.reduce((acc, m) => acc + (Number(m[key]) || 0), 0);
 
-    const followers = Number(profile.data.followers_count) || 0;
-    const mediaCount = Number(profile.data.media_count) || count;
+    const followers = Number(data.followers_count) || 0;
+    const mediaCount = Number(data.media_count) || count;
     const totalLikes = sum("like_count");
     const totalComments = sum("comments_count");
 
     return {
       platform: "instagram",
-      username: profile.data.username || "",
-      fullName: profile.data.username || "",
+      username: data.username || "",
+      fullName: data.name || data.username || "",
       followers,
       dataPeriod: "30",
-      // `business_discovery` tidak mengekspos reach/impresi per media. Basis
-      // engagement-rate karena itu diturunkan dari follower × jumlah konten,
-      // dengan interaksi nyata sebagai lantai.
       totalReach: Math.max(followers * count, totalLikes + totalComments),
       totalLikes,
       totalComments,
-      // Share/save tidak tersedia di level media lewat field dasar.
       totalSharesSaves: 0,
       contentCount: mediaCount,
     };
@@ -343,7 +334,9 @@ const instagram = {
   async fetchProfile(session) {
     const token = session.accessToken;
     const { ok, data } = await getJson(
-      `https://graph.facebook.com/${DEFAULT_GRAPH_VERSION}/${session.igUserId}?fields=username,name,profile_picture_url&access_token=${encodeURIComponent(token)}`,
+      `https://graph.instagram.com/v26.0/me?fields=username,name,profile_picture_url&access_token=${encodeURIComponent(
+        token,
+      )}`,
     );
     if (!ok) return { username: "", fullName: "" };
     return {
