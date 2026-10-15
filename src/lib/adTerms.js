@@ -1,8 +1,9 @@
 // lib/adTerms.js
 //
 // Syarat penggunaan versi gratis: Cardify dibiayai iklan dari jaringan pihak
-// ketiga — banner Adsterra di halaman kalkulator, dan tautan langsung Monetag
-// yang dibuka di tab baru saat tombol hitung / unduh PDF ditekan.
+// ketiga — banner Adsterra di halaman kalkulator, tautan langsung Monetag yang
+// dibuka di tab baru saat tombol hitung / unduh PDF ditekan, dan tautan InText
+// Infolinks yang disisipkan ke teks halaman.
 //
 // Ini BUKAN persetujuan dalam arti GDPR / UU 27/2022. Tidak ada opsi menolak
 // sambil tetap memakai situs, jadi tidak ada pilihan bebas yang bisa
@@ -17,6 +18,12 @@
 // kalkulator. Karena itu skripnya tidak dimuat sebelum user menekan tombol di
 // bannernya. Iklan Monetag sekarang cuma tautan keluar, tidak ada skripnya yang
 // berjalan di sini.
+//
+// Infolinks satu-satunya yang tidak lewat gerbang ini: skripnya dipasang mentah
+// di `src/pages/_document.js` supaya muncul di HTML sumber, karena verifikasi
+// jaringannya membaca HTML sumber halaman. Klaim di halaman privacy sudah
+// disesuaikan — jangan hapus baris itu dari `_document.js` tanpa mengubah
+// paragraf Infolinks di `src/pages/privacy.js` juga.
 //
 // Disimpan di `localStorage` supaya catatannya bertahan antar tab dan antar
 // sesi — kalau tidak, bannernya muncul terus di setiap kunjungan.

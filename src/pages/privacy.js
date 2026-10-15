@@ -65,11 +65,15 @@ export default function Privacy() {
           ini.
         </Text>
         <Text lineHeight="tall">
-          <b>Infolinks</b> menyisipkan tautan iklan ke dalam teks halaman —
-          di seluruh halaman, bukan cuma di kalkulator. Skripnya juga berjalan
-          di halaman yang sama, jadi batasannya sama dengan Adsterra: ia bisa
+          <b>Infolinks</b> menyisipkan tautan iklan ke dalam teks halaman — di
+          seluruh halaman, bukan cuma di kalkulator. Skripnya berjalan di
+          halaman yang sama, jadi batasannya sama dengan Adsterra: ia bisa
           membaca apa pun yang ada di halaman, dan kami tidak bisa membatasi
-          itu. Data yang mereka proses diatur oleh kebijakan privasi Infolinks.
+          itu. Bedanya, skrip Infolinks dimuat di setiap kunjungan, termasuk
+          sebelum kamu menekan tombol di banner: jaringan ini memverifikasi
+          pemasangannya lewat HTML sumber halaman, dan skrip yang baru dimuat
+          setelah klik tidak terlihat di sana. Data yang mereka proses diatur
+          oleh kebijakan privasi Infolinks.
         </Text>
         <Text lineHeight="tall">
           <b>Monetag</b> tidak memuat skrip apa pun di halaman ini. Iklannya
@@ -80,10 +84,11 @@ export default function Privacy() {
           perhitungan atau unduhan PDF yang sedang jalan.
         </Text>
         <Text lineHeight="tall">
-          Skrip Adsterra dan Infolinks baru dimuat setelah kamu menekan{" "}
-          <b>Setuju &amp; Lanjutkan</b> di banner. Sebelum itu kalkulatornya
-          tetap berfungsi penuh — yang tertunda cuma pemuatan iklannya, bukan
-          fiturnya.
+          Skrip banner Adsterra baru dimuat setelah kamu menekan{" "}
+          <b>Setuju &amp; Lanjutkan</b> di banner. Skrip Infolinks tidak
+          menunggu tombol itu — sudah dimuat sejak halamannya dibuka. Sebelum
+          tombolnya ditekan, kalkulatornya tetap berfungsi penuh — yang
+          tertunda cuma pemuatan iklan Adsterra, bukan fiturnya.
         </Text>
       </LegalSection>
 

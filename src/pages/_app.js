@@ -5,7 +5,6 @@ import { Analytics } from "@vercel/analytics/next";
 
 import theme from "@/theme";
 import AdTermsBanner from "@/components/AdTermsBanner";
-import Infolinks from "@/components/Infolinks";
 import "@/styles/globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -60,7 +59,6 @@ export default function App({ Component, pageProps }) {
       >
         {getLayout(<Component {...pageProps} />)}
         <AdTermsBanner />
-        <Infolinks />
         <Analytics />
       </Box>
     </ChakraProvider>

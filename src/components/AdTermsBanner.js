@@ -14,7 +14,10 @@ import {
  *
  * Situs ini gratis dan dibiayai iklan, jadi iklannya bukan opsional selama
  * user memakai versi gratis. Banner ini menjelaskan itu sekali, mencatat
- * penerimaannya, dan baru setelah itu skrip pihak ketiga boleh dimuat.
+ * penerimaannya, dan baru setelah itu skrip pihak ketiga boleh dimuat —
+ * pengecualiannya skrip Infolinks, yang sudah jalan sejak halaman dibuka di
+ * `src/pages/_document.js` karena jaringannya memverifikasi pemasangan lewat
+ * HTML sumber. Halaman privacy menyebut pengecualian itu apa adanya.
  *
  * Ini bukan banner persetujuan: tidak ada tombol tolak, jadi jangan sebut ini
  * "consent" di dokumen mana pun. Lihat catatan di `src/lib/adTerms.js`.
