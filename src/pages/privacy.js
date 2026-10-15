@@ -13,7 +13,7 @@ export default function Privacy() {
     <LegalPage
       title="Kebijakan Privasi"
       path="/privacy"
-      updatedAt="1 Oktober 2026"
+      updatedAt="15 Oktober 2026"
       description="Apa yang Cardify lakukan dengan datamu: perhitungan berjalan di browser, skrip iklan versi gratis, dan nilai yang tersimpan di perangkatmu."
     >
       <LegalSection title="Kalkulator">
@@ -45,6 +45,14 @@ export default function Privacy() {
           >
             Adsterra
           </Link>
+          , dan{" "}
+          <Link
+            href="https://www.infolinks.com/"
+            isExternal
+            textDecoration="underline"
+          >
+            Infolinks
+          </Link>
           . Versi berbayar tanpa iklan sedang disiapkan.
         </Text>
         <Text lineHeight="tall">
@@ -57,6 +65,13 @@ export default function Privacy() {
           ini.
         </Text>
         <Text lineHeight="tall">
+          <b>Infolinks</b> menyisipkan tautan iklan ke dalam teks halaman —
+          di seluruh halaman, bukan cuma di kalkulator. Skripnya juga berjalan
+          di halaman yang sama, jadi batasannya sama dengan Adsterra: ia bisa
+          membaca apa pun yang ada di halaman, dan kami tidak bisa membatasi
+          itu. Data yang mereka proses diatur oleh kebijakan privasi Infolinks.
+        </Text>
+        <Text lineHeight="tall">
           <b>Monetag</b> tidak memuat skrip apa pun di halaman ini. Iklannya
           berupa tautan langsung yang dibuka di tab baru saat kamu menekan
           tombol hitung atau unduh PDF, jadi halaman ini beserta isinya tidak
@@ -65,7 +80,7 @@ export default function Privacy() {
           perhitungan atau unduhan PDF yang sedang jalan.
         </Text>
         <Text lineHeight="tall">
-          Skrip Adsterra baru dimuat setelah kamu menekan{" "}
+          Skrip Adsterra dan Infolinks baru dimuat setelah kamu menekan{" "}
           <b>Setuju &amp; Lanjutkan</b> di banner. Sebelum itu kalkulatornya
           tetap berfungsi penuh — yang tertunda cuma pemuatan iklannya, bukan
           fiturnya.

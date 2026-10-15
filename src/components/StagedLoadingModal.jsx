@@ -72,7 +72,7 @@ export default function StagedLoadingModal({ isOpen, onComplete }) {
   return (
     <Modal isOpen={isOpen} onClose={() => {}} isCentered closeOnOverlayClick={false}>
       <ModalOverlay backdropFilter="blur(4px)" />
-      <ModalContent bg="surfaceInverse" color="fgInverse" p={6} borderRadius="2xl">
+      <ModalContent color="fgInverse" p={6} borderRadius="2xl">
         <ModalHeader textAlign="center" pb={2}>
           <Text fontSize="xl" fontWeight="bold">
             Membuat Rate Card Anda

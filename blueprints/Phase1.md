@@ -1,5 +1,7 @@
 # Phase 1 — Design Blueprint
 
+> **Layout note (2026-10-15).** Application code lives under `src/` — `src/pages/`, `src/components/`, `src/sections/`, `src/styles/`, `src/theme.js` — and `@/*` resolves to `src/*` only. Paths in this document that used to be root-relative were updated; the full structure and why root-level duplicates existed is in [AGENTS.md](../AGENTS.md#one-code-root-src).
+
 ## Brand Identity
 
 - **Name:** `Cardify`
@@ -16,24 +18,24 @@ Locked. Everything below is decided in Phase 1 and inherited by Phase 2.
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Framework | Next.js `16.3.5`, **Pages Router** | `pages/` already in place. Do not migrate to App Router mid-project. |
+| Framework | Next.js `16.3.5`, **Pages Router** | `src/pages/` already in place. Do not migrate to App Router mid-project. |
 | React | `19.2.8` | Pinned in `package.json`. |
 | Components / styling | **Chakra UI v2** (`@chakra-ui/react` `^2.10.10`) + Emotion | No Tailwind. Every value in this document is a Chakra prop or theme token. |
 | Animation | `framer-motion` `^13.4.0` | Already installed. Phase 1 uses it only for the mobile nav panel, if at all. |
 | Icons | `react-icons` `^5.7.0` | Already installed. Hero preview and step strip icons. |
-| Fonts | `next/font/google` in `pages/_app.js` | Self-hosted, no external request at runtime. |
-| Aliases | `@/*` → repo root | Declared in `jsconfig.json`. Import theme as `@/theme`. |
+| Fonts | `next/font/google` in `src/pages/_app.js` | Self-hosted, no external request at runtime. |
+| Aliases | `@/*` → `src/` | Declared in `jsconfig.json`. Import theme as `@/theme`, which resolves to `src/theme.js`. |
 
-**No Tailwind, no CSS modules, no styled-components.** `styles/globals.css` keeps only the reset it already holds (box-sizing, overflow guard, font smoothing, anchor reset) plus `html { scroll-behavior: smooth }` for the hero CTAs. No colors, fonts, or spacing in CSS — those are theme tokens.
+**No Tailwind, no CSS modules, no styled-components.** `src/styles/globals.css` keeps only the reset it already holds (box-sizing, overflow guard, font smoothing, anchor reset) plus `html { scroll-behavior: smooth }` for the hero CTAs. No colors, fonts, or spacing in CSS — those are theme tokens.
 
 ### Shipped state
 
-- [`theme.js`](../theme.js) — dark color mode, all tokens, and the `primary` / `secondary` Button variants.
-- [`pages/_app.js`](../pages/_app.js) — `ChakraProvider` plus the `next/font` variables on a full-height `Box`.
-- [`pages/_document.js`](../pages/_document.js) — unchanged; renders `ColorModeScript` from `theme.config.initialColorMode` and sets `<Html lang="en">`.
-- [`pages/index.js`](../pages/index.js) — Seo, Header, Hero, WhoWeAre, Footer.
+- [`src/theme.js`](../src/theme.js) — dark color mode, all tokens, and the `primary` / `secondary` Button variants.
+- [`src/pages/_app.js`](../src/pages/_app.js) — `ChakraProvider` plus the `next/font` variables on a full-height `Box`.
+- [`src/pages/_document.js`](../src/pages/_document.js) — unchanged; renders `ColorModeScript` from `theme.config.initialColorMode` and sets `<Html lang="en">`.
+- [`src/pages/index.js`](../src/pages/index.js) — Seo, Header, Hero, WhoWeAre, Footer.
 - `public/` — `favicon.ico`, `icon.png`, `apple-icon.png`, `og-image.png` generated from the brand gradient; the Next.js starter SVGs are deleted.
-- `pages/api/hello.js` — leftover starter API route, unused. Delete when convenient.
+- `src/pages/api/hello.js` — leftover starter API route, unused. Delete when convenient.
 
 ## Design Reference
 
@@ -75,7 +77,7 @@ Visual example: [`../reference/design-reference.png`](../reference/design-refere
 
 ## Theme Tokens
 
-`theme.js` is the single source of truth. Section specs below reference these names; never hardcode a hex value in a component.
+`src/theme.js` is the single source of truth. Section specs below reference these names; never hardcode a hex value in a component.
 
 **Two token sets, one role each.** `bg` / `fg` / `muted` / `border` are the dark-band set. The `*Inverse` names are the same roles for the light band. A component never mixes the two inside one band — a dark band uses the base set, the light band uses `*Inverse`. That is what keeps contrast deliberate instead of accidental.
 
@@ -171,7 +173,7 @@ Earlier drafts of this document used Tailwind class names. Map them as follows; 
 
 ## Typography
 
-**Families** — self-hosted through `next/font/google`, wired in `pages/_app.js`:
+**Families** — self-hosted through `next/font/google`, wired in `src/pages/_app.js`:
 
 ```js
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
@@ -256,27 +258,27 @@ Phase 1 ships one route. Phase 2 adds the calculator routes — reserve the name
 
 | Path | Phase | Contents |
 |---|---|---|
-| `pages/index.js` | 1 | Landing page — assembles Header, Hero, Who We Are, Footer. |
-| `pages/_app.js` | 1 | `ChakraProvider` + `next/font` variables. |
-| `pages/_document.js` | 1 | `lang="en"`, `ColorModeScript`. |
-| `pages/tiktok.js` | 2 | TikTok calculator tab. |
-| `pages/youtube.js` | 2 | YouTube calculator tab. |
-| `pages/instagram.js` | 2 | Instagram calculator tab. |
+| `src/pages/index.js` | 1 | Landing page — assembles Header, Hero, Who We Are, Footer. |
+| `src/pages/_app.js` | 1 | `ChakraProvider` + `next/font` variables. |
+| `src/pages/_document.js` | 1 | `lang="en"`, `ColorModeScript`. |
+| `src/pages/tiktok.js` | 2 | TikTok calculator tab. |
+| `src/pages/youtube.js` | 2 | YouTube calculator tab. |
+| `src/pages/instagram.js` | 2 | Instagram calculator tab. |
 
 Component layout for Phase 1:
 
 ```
-components/
+src/components/
   Header.js        # sticky nav
   Footer.js        # brand column + link column + bottom bar
   Hero.js          # hero copy + preview panel
   WhoWeAre.js      # heading, lead, 3 value cards, 3-step strip
   Seo.js           # <Head> block — title/description/OG/JSON-LD, props-driven
   Wordmark.js      # gradient glyph + "Cardify", pill variant for the header
-sections/          # only if components/ grows past ~8 files
+src/sections/      # only if components/ grows past ~8 files
 ```
 
-`components/Seo.js` takes `title`, `description`, and `path` props and renders one `<Head>` block. Pass `title` on any route other than the landing page and it renders as `<title> | Cardify` (Pages Router has no metadata title template — the suffix is applied in the component).
+`src/components/Seo.js` takes `title`, `description`, and `path` props and renders one `<Head>` block. Pass `title` on any route other than the landing page and it renders as `<title> | Cardify` (Pages Router has no metadata title template — the suffix is applied in the component).
 
 ### Anchor plan
 
@@ -394,8 +396,8 @@ Every value below is locked to `Cardify` and `cardify.my.id` — Phase 1 ships t
 Pages Router renders metadata through `next/head` (see `node_modules/next/dist/docs/02-pages/04-api-reference/01-components/head.md`). Rules that bite:
 
 - `title` and `meta` must be **direct** children of `<Head>`, or wrapped in at most one fragment — deeper nesting is dropped on client-side navigation.
-- `<Head>` cannot set attributes on `<html>` or `<body>`; `lang="en"` already lives on `<Html>` in `pages/_document.js`.
-- The JSON-LD block is inlined in `<Head>` as `<script type="application/ld+json" dangerouslySetInnerHTML={...} />`. It is **not** rendered through `next/script`: `strategy="afterInteractive"` (the default) injects it client-side, so it would be missing from the server-rendered HTML that crawlers read, and `beforeInteractive` is only permitted inside `pages/_document.js` ([script.md](../node_modules/next/dist/docs/01-app/03-api-reference/02-components/script.md)).
+- `<Head>` cannot set attributes on `<html>` or `<body>`; `lang="en"` already lives on `<Html>` in `src/pages/_document.js`.
+- The JSON-LD block is inlined in `<Head>` as `<script type="application/ld+json" dangerouslySetInnerHTML={...} />`. It is **not** rendered through `next/script`: `strategy="afterInteractive"` (the default) injects it client-side, so it would be missing from the server-rendered HTML that crawlers read, and `beforeInteractive` is only permitted inside `src/pages/_document.js` ([script.md](../node_modules/next/dist/docs/01-app/03-api-reference/02-components/script.md)).
 
 ### Page Title & Description
 

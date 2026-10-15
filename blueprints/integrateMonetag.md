@@ -12,12 +12,12 @@
 >    domain itu memegang kendali penuh atas origin ini, termasuk menulis ulang
 >    respons untuk URL apa pun. `public/sw.js` sudah dihapus dan
 >    `loadMonetagPushNotification()` sudah dibuang dari
->    [src/lib/loadMonetag.js](../lib/loadMonetag.js).
-> 2. **Ada gerbang syarat penggunaan.** [src/lib/adTerms.js](../lib/adTerms.js)
+>    [src/lib/loadMonetag.js](../src/lib/loadMonetag.js).
+> 2. **Ada gerbang syarat penggunaan.** [src/lib/adTerms.js](../src/lib/adTerms.js)
 >    mencatat kapan user menerima syarat versi gratis (`ads:acceptedAt` di
 >    `localStorage`); `showMonetagAd()` menolak jalan tanpa itu. Banner-nya di
->    [src/components/AdTermsBanner.js](../components/AdTermsBanner.js),
->    penjelasannya di [src/pages/privacy.js](../pages/privacy.js).
+>    [src/components/AdTermsBanner.js](../src/components/AdTermsBanner.js),
+>    penjelasannya di [src/pages/privacy.js](../src/pages/privacy.js).
 >
 >    Ini **bukan** persetujuan (consent): tidak ada tombol tolak, karena versi
 >    gratis memang dibiayai iklan. Kalkulatornya tidak diblokir — sebelum
@@ -26,7 +26,7 @@
 >    mana pun; klaim persetujuan atas sesuatu yang tidak bisa ditolak justru
 >    sumber masalahnya. Kalau nanti versi berbayar tanpa iklan benar-benar
 >    ada, baru gate-nya punya alternatif yang sah.
-> 3. **Ada security header.** [next.config.mjs](../../next.config.mjs) mengirim
+> 3. **Ada security header.** [next.config.mjs](../next.config.mjs) mengirim
 >    CSP (`frame-ancestors`/`object-src`/`base-uri`), X-Frame-Options,
 >    nosniff, Referrer-Policy, Permissions-Policy, dan HSTS. Belum ada
 >    `script-src` / `connect-src` — allowlist yang ketat akan mematahkan skrip
@@ -35,7 +35,7 @@
 >
 > 4. **Tag skrip (`11931554`, `https://nap5k.com/tag.min.js`) diganti direct
 >    link.** `loadMonetagTag()` sudah dibuang; yang tersisa di
->    [src/lib/loadMonetag.js](../lib/loadMonetag.js) cuma throttle + pembukaan
+>    [src/lib/loadMonetag.js](../src/lib/loadMonetag.js) cuma throttle + pembukaan
 >    `https://omg10.com/4/11933547` lewat `window.open` dari handler klik.
 >    Tidak ada skrip Monetag yang berjalan di origin ini lagi, jadi seluruh
 >    bagian di bawah yang membahas injeksi `<script>` sudah tidak berlaku.
@@ -53,10 +53,10 @@ ad per 5-minute window.
 
 | File | Change |
 | --- | --- |
-| [src/pages/calculator/tiktok.js](../pages/calculator/tiktok.js) | Trigger + throttle on calculate / export |
-| [src/pages/calculator/youtube.js](../pages/calculator/youtube.js) | Trigger + throttle on calculate / export |
-| [src/pages/calculator/instagram.js](../pages/calculator/instagram.js) | Trigger + throttle on calculate / export |
-| [src/lib/loadMonetag.js](../lib/loadMonetag.js) | Loader helpers (extend if needed) |
+| [src/pages/calculator/tiktok.js](../src/pages/calculator/tiktok.js) | Trigger + throttle on calculate / export |
+| [src/pages/calculator/youtube.js](../src/pages/calculator/youtube.js) | Trigger + throttle on calculate / export |
+| [src/pages/calculator/instagram.js](../src/pages/calculator/instagram.js) | Trigger + throttle on calculate / export |
+| [src/lib/loadMonetag.js](../src/lib/loadMonetag.js) | Loader helpers (extend if needed) |
 
 ## Current State
 
@@ -69,7 +69,7 @@ ad per 5-minute window.
   programmatic submit.
 - `loadMonetagPushNotification()` is called once on page mount from a
   `useEffect`.
-- [src/lib/loadMonetag.js](../lib/loadMonetag.js) exposes two independent loaders,
+- [src/lib/loadMonetag.js](../src/lib/loadMonetag.js) exposes two independent loaders,
   each guarded against duplicate `<script>` injection:
   - `loadMonetagScript()` — vignette / in-page ad, zone `11930901`.
   - `loadMonetagPushNotification()` — push tag, zone `11930912`.
@@ -79,7 +79,7 @@ ad per 5-minute window.
 ## Provided Snippet (from Monetag)
 
 Zone `11931554`, tag script `https://nap5k.com/tag.min.js`. This is a **third** zone —
-neither of the two already wired in [src/lib/loadMonetag.js](../lib/loadMonetag.js).
+neither of the two already wired in [src/lib/loadMonetag.js](../src/lib/loadMonetag.js).
 
 ```html
 <script>(function(s){s.dataset.zone='11931554',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
@@ -89,7 +89,7 @@ The snippet is a self-executing IIFE: it picks `document.body` if present, else
 `document.documentElement`, appends the script, and tags it with
 `data-zone="11931554"`.
 
-Equivalent inside [src/lib/loadMonetag.js](../lib/loadMonetag.js), matching the
+Equivalent inside [src/lib/loadMonetag.js](../src/lib/loadMonetag.js), matching the
 existing loader style (client guard, dedupe by zone, `async`, appended to `body`):
 
 ```js
@@ -124,7 +124,7 @@ as `src` is set.
    5 minutes of the last ad being shown, no ad is shown. The counter/threshold is
    persisted in `sessionStorage`.
 
-3. **Reuse the existing loader.** [src/lib/loadMonetag.js](../lib/loadMonetag.js)
+3. **Reuse the existing loader.** [src/lib/loadMonetag.js](../src/lib/loadMonetag.js)
    is the single entry point; extend it rather than inlining script tags in the
    page components.
 
@@ -224,7 +224,7 @@ document.querySelectorAll('script[data-zone]').length;
 
 After clicking `calculate-rate-card`, the same expression should return `1` (or the
 number of zones deliberately wired). Clicking repeatedly must **not** increase the
-count — that is the dedupe guard in [src/lib/loadMonetag.js](../lib/loadMonetag.js)
+count — that is the dedupe guard in [src/lib/loadMonetag.js](../src/lib/loadMonetag.js)
 working.
 
 Inspect what actually landed:
