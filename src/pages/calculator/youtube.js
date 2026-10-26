@@ -13,6 +13,7 @@ import {
   Image,
   DarkMode,
   IconButton,
+  Input,
   useToast,
 } from "@chakra-ui/react";
 import RHFFormProvider from "@/components/hook-form/RHFFormProvider";
@@ -78,6 +79,14 @@ export default function Youtube() {
   const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
   const pendingResultsRef = useRef(null);
   const userClickedSubmitRef = useRef(false);
+
+  // ── Auto-fill publik (tanpa login) ──
+  // `lookupAvailable` baru bernilai true kalau server punya YOUTUBE_API_KEY.
+  // Kalau tidak, panel tidak dirender sama sekali — form manual tetap utuh.
+  const [lookupAvailable, setLookupAvailable] = useState(false);
+  const [lookupRef, setLookupRef] = useState("");
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const [lookupNote, setLookupNote] = useState(null);
   const methods = useForm({
     defaultValues: {
       fullName: "",
@@ -212,6 +221,116 @@ export default function Youtube() {
     };
   }, []);
 
+  /**
+   * Cek sekali apakah server punya YOUTUBE_API_KEY. Kalau tidak, panel auto-fill
+   * tidak dirender — user tidak melihat tombol yang pasti gagal.
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/social/oauth/status")
+      .then((res) => res.json())
+      .then((payload) => {
+        if (!cancelled) setLookupAvailable(Boolean(payload?.youtubeLookup?.configured));
+      })
+      .catch(() => {
+        // Status tidak tersedia bukan alasan memblokir form manual.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleLookup = useCallback(async () => {
+    const ref = lookupRef.trim();
+    if (!ref) {
+      setLookupNote({
+        type: "error",
+        text: "Masukkan username atau URL channel dulu.",
+      });
+      return;
+    }
+
+    setIsLookingUp(true);
+    setLookupNote(null);
+
+    try {
+      const res = await fetch(
+        `/api/social/youtube/lookup?ref=${encodeURIComponent(ref)}`,
+      );
+      const payload = await res.json().catch(() => null);
+
+      if (!res.ok || !payload?.success) {
+        throw new Error(payload?.error || "Gagal mengambil data channel.");
+      }
+
+      const data = payload.data;
+      const { setValue } = methods;
+
+      if (data.fullName) {
+        setValue("fullName", data.fullName, { shouldValidate: true });
+      }
+      if (data.username) {
+        setValue("youtubeHandle", `@${data.username}`, { shouldValidate: true });
+      }
+      setValue("dataPeriod", data.dataPeriod || "30", { shouldValidate: true });
+
+      // Field subscriber punya rule `min: 1`. Channel baru dengan 0 subscriber
+      // akan gagal validasi kalau diisi 0 — biarkan kosong, beri tahu user.
+      if (data.totalSubscribers > 0) {
+        setValue("totalSubscribers", data.totalSubscribers, {
+          shouldValidate: true,
+        });
+      }
+
+      [
+        "avgViewsPerVideo",
+        "avgLikesPerVideo",
+        "avgCommentsPerVideo",
+        "avgSharesPerVideo",
+      ].forEach((key) => {
+        setValue(key, Number(data[key]) || 0, { shouldValidate: true });
+      });
+
+      const avatar = data.avatarDataUrl || data.avatarUrl;
+      if (avatar) {
+        setValue("displayPicture", avatar, { shouldValidate: true });
+      }
+
+      // Catatan jujur soal batas data — kalau tidak, user mengira angka kita
+      // salah saat subscriber tampil 12.300, bukan 12.345.
+      const notes = [
+        `Data dari YouTube${payload.cached ? " (cache)" : ""}`,
+        data.videoSampleSize
+          ? `dihitung dari ${data.videoSampleSize} video terakhir`
+          : null,
+        "subscriber dibulatkan YouTube ke 3 angka signifikan",
+        "share tidak tersedia di API (dianggap 0)",
+        data.subscriberCountHidden
+          ? "channel menyembunyikan subscriber count"
+          : null,
+        data.totalSubscribers === 0
+          ? "subscriber terbaca 0 — isi manual bila perlu"
+          : null,
+      ].filter(Boolean);
+
+      setLookupNote({ type: "info", text: notes.join(" · ") });
+
+      toast({
+        title: "Data channel terisi",
+        description: "Periksa kembali angka sebelum menghitung rate card.",
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+      });
+    } catch (error) {
+      setLookupNote({ type: "error", text: error.message });
+    } finally {
+      setIsLookingUp(false);
+    }
+  }, [lookupRef, methods, toast]);
+
   const handleDownloadPdf = useCallback(async () => {
     if (exportLockRef.current) return;
     exportLockRef.current = true;
@@ -296,6 +415,69 @@ export default function Youtube() {
                     <Heading size="md" color="fgInverse" mb={4}>
                       Bagian 1: Identitas Channel
                     </Heading>
+
+                    {lookupAvailable && (
+                      <Box
+                        mb={6}
+                        p={5}
+                        bg="bgInverse"
+                        borderWidth="1px"
+                        borderColor="borderInverse"
+                        borderRadius="card"
+                      >
+                        <Text fontWeight="bold" color="fgInverse" mb={1}>
+                          Isi otomatis dari YouTube
+                        </Text>
+                        <Text fontSize="sm" color="mutedInverse" mb={3}>
+                          Masukkan username atau tempel URL channel. Data publik
+                          diambil dari YouTube — tanpa login dan tanpa akses ke
+                          akun Anda.
+                        </Text>
+
+                        <Flex gap={3} direction={{ base: "column", sm: "row" }}>
+                          <Input
+                            value={lookupRef}
+                            onChange={(event) => setLookupRef(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                handleLookup();
+                              }
+                            }}
+                            placeholder="@namaChannel atau https://youtube.com/@namaChannel"
+                            bg="white"
+                            color="black"
+                            isDisabled={isLookingUp}
+                            aria-label="Username atau URL channel YouTube"
+                          />
+                          <Button
+                            onClick={handleLookup}
+                            isLoading={isLookingUp}
+                            loadingText="Mengambil"
+                            colorScheme="youtubeRed"
+                            px={6}
+                            flexShrink={0}
+                          >
+                            Ambil Data
+                          </Button>
+                        </Flex>
+
+                        {lookupNote && (
+                          <Text
+                            mt={3}
+                            fontSize="sm"
+                            color={
+                              lookupNote.type === "error"
+                                ? "red.500"
+                                : "mutedInverse"
+                            }
+                          >
+                            {lookupNote.text}
+                          </Text>
+                        )}
+                      </Box>
+                    )}
+
                     <Grid
                       templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
                       gap={6}

@@ -85,8 +85,12 @@ export async function resolveOwnChannel(auth) {
 /**
  * Resolusi channel dari handle/username tanpa login (jalur API key).
  * Urutan dari yang paling murah: forHandle → forUsername → search (100 unit).
+ *
+ * `allowSearch: false` mematikan fallback `search.list`. Satu panggilan search
+ * berbiaya 100 unit kuota — 100 user yang salah ketik handle sudah menghabiskan
+ * 1% kuota harian. Untuk input user sebaiknya matikan dan balas 404.
  */
-export async function resolveChannelByHandle(handle, auth) {
+export async function resolveChannelByHandle(handle, auth, { allowSearch = true } = {}) {
   const clean = String(handle || "").replace(/^@/, "").trim();
   if (!clean) {
     const err = new Error("Handle YouTube kosong.");
@@ -99,22 +103,43 @@ export async function resolveChannelByHandle(handle, auth) {
     if (data.items?.length) return data.items[0];
   }
 
-  const search = await googleFetch("search", auth, {
-    part: "snippet",
-    type: "channel",
-    maxResults: 1,
-    q: clean,
-  });
-  const channelId = search.items?.[0]?.id?.channelId;
-  if (channelId) {
-    const detail = await googleFetch("channels", auth, { part: CHANNEL_PART, id: channelId });
-    if (detail.items?.length) return detail.items[0];
+  if (allowSearch) {
+    const search = await googleFetch("search", auth, {
+      part: "snippet",
+      type: "channel",
+      maxResults: 1,
+      q: clean,
+    });
+    const channelId = search.items?.[0]?.id?.channelId;
+    if (channelId) {
+      const detail = await googleFetch("channels", auth, { part: CHANNEL_PART, id: channelId });
+      if (detail.items?.length) return detail.items[0];
+    }
   }
 
   const err = new Error(`Channel YouTube "@${clean}" tidak ditemukan.`);
   err.statusCode = 404;
   throw err;
 }
+
+/** Resolusi channel dari ID kanonik (`UC...`) — 1 unit kuota, paling murah. */
+export async function resolveChannelById(channelId, auth) {
+  const clean = String(channelId || "").trim();
+  if (!clean) {
+    const err = new Error("Channel ID YouTube kosong.");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const data = await googleFetch("channels", auth, { part: CHANNEL_PART, id: clean });
+  if (!data.items?.length) {
+    const err = new Error(`Channel YouTube dengan ID "${clean}" tidak ditemukan.`);
+    err.statusCode = 404;
+    throw err;
+  }
+  return data.items[0];
+}
+
 
 /**
  * Statistik video dari playlist uploads.
@@ -187,29 +212,17 @@ export function buildYouTubeMetrics(channel, videos, { username } = {}) {
     // YouTube tidak mengekspos jumlah share per video.
     avgSharesPerVideo: 0,
     videoSampleSize: count,
+    // Channel bisa menyembunyikan subscriber count; API tetap mengembalikan
+    // field-nya tapi nilainya bukan angka sebenarnya.
+    subscriberCountHidden: stats.hiddenSubscriberCount === true,
   };
 }
 
 /**
- * Alur lengkap untuk channel publik berdasarkan handle (butuh API key).
- * Rata-rata dihitung dari video 30 hari terakhir; kalau channel jarang upload,
- * jatuh ke 10 video terakhir supaya angkanya tetap masuk akal.
+ * Channel + video → metrik ternormalisasi. Dipakai semua jalur supaya angka
+ * yang keluar konsisten, terlepas dari cara channel itu ditemukan.
  */
-export async function fetchYouTubeByHandle(handle, auth) {
-  const channel = await resolveChannelByHandle(handle, auth);
-  const playlistId = channel.contentDetails?.relatedPlaylists?.uploads;
-
-  let videos = await fetchRecentVideos(playlistId, auth, 30);
-  if (!videos.length) {
-    videos = await fetchRecentVideos(playlistId, auth, 0);
-  }
-
-  return buildYouTubeMetrics(channel, videos, { username: handle.replace(/^@/, "") });
-}
-
-/** Alur untuk akun sendiri via OAuth. */
-export async function fetchYouTubeOwnChannel(auth, username) {
-  const channel = await resolveOwnChannel(auth);
+async function metricsForChannel(channel, auth, username) {
   const playlistId = channel.contentDetails?.relatedPlaylists?.uploads;
 
   let videos = await fetchRecentVideos(playlistId, auth, 30);
@@ -218,4 +231,34 @@ export async function fetchYouTubeOwnChannel(auth, username) {
   }
 
   return buildYouTubeMetrics(channel, videos, { username });
+}
+
+/**
+ * Alur lengkap untuk channel publik berdasarkan handle (butuh API key).
+ * Rata-rata dihitung dari video 30 hari terakhir; kalau channel jarang upload,
+ * jatuh ke 10 video terakhir supaya angkanya tetap masuk akal.
+ */
+export async function fetchYouTubeByHandle(handle, auth, options = {}) {
+  const channel = await resolveChannelByHandle(handle, auth, options);
+  return metricsForChannel(channel, auth, String(handle).replace(/^@/, ""));
+}
+
+/**
+ * Titik masuk untuk input bebas user: `@handle`, `handle`, `UC...`,
+ * `youtube.com/@handle`, `/c/nama`, `/user/nama`, atau `/channel/UC...`.
+ * `ref` adalah hasil `parseYouTubeRef()` di sisi route.
+ */
+export async function fetchYouTubeByRef(ref, auth, { allowSearch = false } = {}) {
+  const channel =
+    ref.kind === "id"
+      ? await resolveChannelById(ref.value, auth)
+      : await resolveChannelByHandle(ref.value, auth, { allowSearch });
+
+  return metricsForChannel(channel, auth, ref.value.replace(/^@/, ""));
+}
+
+/** Alur untuk akun sendiri via OAuth. */
+export async function fetchYouTubeOwnChannel(auth, username) {
+  const channel = await resolveOwnChannel(auth);
+  return metricsForChannel(channel, auth, username);
 }

@@ -89,6 +89,10 @@ export default async function handler(req, res) {
       success: true,
       sessionConfigured: isSessionConfigured(),
       providers: getOAuthStatus(),
+      // Auto-fill publik (tanpa login) — cuma butuh API key, bukan OAuth.
+      youtubeLookup: {
+        configured: Boolean(process.env.YOUTUBE_API_KEY),
+      },
     });
   }
 
